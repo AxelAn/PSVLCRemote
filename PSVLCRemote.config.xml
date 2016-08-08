@@ -1,0 +1,66 @@
+<?xml version="1.0" standalone="yes"?>
+<PSVLCRemote>
+  <Script>
+    <ScriptName>PS VLC Remote</ScriptName>
+    <ScriptDate>7. Mai 2016</ScriptDate>
+    <ScriptVersion>0.6.1</ScriptVersion>
+    <ScriptAuthor>Axel Anderson</ScriptAuthor>
+    <ConfigVersion>1</ConfigVersion>
+  </Script>
+  <Settings>
+    <DefaultConnectionID>EB4C6EF7-2316-4F1F-A2F3-0F5543AE0B4B</DefaultConnectionID>
+  </Settings>
+  <Bounds>
+    <ID>02BCBDFF-26AB-4182-9FBA-BFF4DAFBC8B7-00001</ID>
+    <Name>MainWindow</Name>
+    <XPos>585</XPos>
+    <YPos>335</YPos>
+    <Width>366</Width>
+    <Height>163</Height>
+    <IsSet>1</IsSet>
+  </Bounds>
+  <Bounds>
+    <ID>02BCBDFF-26AB-4182-9FBA-BFF4DAFBC8B7-00002</ID>
+    <Name>PlaylistWindow</Name>
+    <XPos>0</XPos>
+    <YPos>0</YPos>
+    <Width>0</Width>
+    <Height>0</Height>
+    <IsSet>0</IsSet>
+  </Bounds>
+  <Bounds>
+    <ID>02BCBDFF-26AB-4182-9FBA-BFF4DAFBC8B7-00003</ID>
+    <Name>ExplorerWindow</Name>
+    <XPos>0</XPos>
+    <YPos>0</YPos>
+    <Width>0</Width>
+    <Height>0</Height>
+    <IsSet>0</IsSet>
+  </Bounds>
+  <Bounds>
+    <ID>02BCBDFF-26AB-4182-9FBA-BFF4DAFBC8B7-00004</ID>
+    <Name>ConnectionManagerWindow</Name>
+    <XPos>0</XPos>
+    <YPos>0</YPos>
+    <Width>541</Width>
+    <Height>359</Height>
+    <IsSet>1</IsSet>
+  </Bounds>
+  <Bounds>
+    <ID>02BCBDFF-26AB-4182-9FBA-BFF4DAFBC8B7-00005</ID>
+    <Name>NetworkStreamManagerWindow</Name>
+    <XPos>42</XPos>
+    <YPos>73</YPos>
+    <Width>796</Width>
+    <Height>459</Height>
+    <IsSet>1</IsSet>
+  </Bounds>
+  <Connections>
+    <ID>EB4C6EF7-2316-4F1F-A2F3-0F5543AE0B4B</ID>
+    <Description>LOCAL</Description>
+    <HostnameOrIP>127.0.0.1</HostnameOrIP>
+    <Port>10080</Port>
+    <Password>1234</Password>
+    <UseAutoIP>1</UseAutoIP>
+  </Connections>
+</PSVLCRemote>

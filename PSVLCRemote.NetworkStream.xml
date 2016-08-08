@@ -1,0 +1,88 @@
+<?xml version="1.0" standalone="yes"?>
+<StreamingStations>
+  <StreamingStations>
+    <ID>ABB7773A-0599-4306-AB66-5CFA9DD81A25</ID>
+    <StreamType>WebRadio</StreamType>
+    <Name>Radio Okerwelle</Name>
+    <URL>http://www.okerwelle.de/webradio/live.m3u</URL>
+    <WebSite>http://www.radiookerwelle.de/</WebSite>
+    <Region>Europe</Region>
+    <Country>Germany</Country>
+    <State>Niedersachsen</State>
+    <City>Braunschweig</City>
+    <Genre>Local Service</Genre>
+    <Bitrate>128</Bitrate>
+    <Tags />
+    <Rate>0</Rate>
+    <Annotation />
+    <Favorite>1</Favorite>
+  </StreamingStations>
+  <StreamingStations>
+    <ID>C0AD1031-CD3A-4F3E-80FE-23F1487C158C</ID>
+    <StreamType>WebRadio</StreamType>
+    <Name>Radio 38 Braunschweig</Name>
+    <URL>http://stream.radio38.de/bs/mp3-128/stream.radio38.de/play.m3u</URL>
+    <WebSite>http://www.radio38.de</WebSite>
+    <Region>Europe</Region>
+    <Country>Germany</Country>
+    <State>Niedersachsen</State>
+    <City>Braunschweig</City>
+    <Genre>Local Service</Genre>
+    <Bitrate>128</Bitrate>
+    <Tags />
+    <Rate>8</Rate>
+    <Annotation />
+    <Favorite>1</Favorite>
+  </StreamingStations>
+  <StreamingStations>
+    <ID>F2096F07-3EB2-4D54-AEB6-009105D178CB</ID>
+    <StreamType>Web Live TV</StreamType>
+    <Name>Das Erste TV Live</Name>
+    <URL>http://daserste_live-lh.akamaihd.net/i/daserste_de@91204/master.m3u8</URL>
+    <WebSite>http://www.daserste.de/</WebSite>
+    <Region>Europe</Region>
+    <Country>Germany</Country>
+    <State />
+    <City />
+    <Genre>Live TV</Genre>
+    <Bitrate />
+    <Tags />
+    <Rate>0</Rate>
+    <Annotation>See http://live.daserste.de/de/livestream.xml</Annotation>
+    <Favorite>1</Favorite>
+  </StreamingStations>
+  <StreamingStations>
+    <ID>AB907DEF-FF56-4B95-AD72-CE566F12A704</ID>
+    <StreamType>Web Live TV</StreamType>
+    <Name>ZDF TV Live</Name>
+    <URL>http://zdf1314-lh.akamaihd.net/i/de14_v1@392878/master.m3u8?dw=0</URL>
+    <WebSite>http://www.zdf.de/</WebSite>
+    <Region>Europe</Region>
+    <Country>Germany</Country>
+    <State />
+    <City />
+    <Genre>Live TV</Genre>
+    <Bitrate />
+    <Tags />
+    <Rate>0</Rate>
+    <Annotation>See https://wiki.ubuntuusers.de/Internet-TV/Stationen</Annotation>
+    <Favorite>1</Favorite>
+  </StreamingStations>
+  <StreamingStations>
+    <ID>D1A21ACC-2450-43A4-8F9F-423CDF8EFD38</ID>
+    <StreamType>Web Live TV</StreamType>
+    <Name>NDR TV Live</Name>
+    <URL>http://ndr_fs-lh.akamaihd.net/i/ndrfs_nds@119224/master.m3u8</URL>
+    <WebSite>http://www.ndr.de/fernsehen/livestream/livestream217.html</WebSite>
+    <Region>Europe</Region>
+    <Country>Germany</Country>
+    <State />
+    <City />
+    <Genre>Live TV</Genre>
+    <Bitrate />
+    <Tags />
+    <Rate>0</Rate>
+    <Annotation />
+    <Favorite>1</Favorite>
+  </StreamingStations>
+</StreamingStations>
