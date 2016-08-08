@@ -1,5 +1,5 @@
 # PSVLCRemote 
-Control the VLC Player Local orRemotly
+Control the VLC Player Local or Remote
 
 Written in Powershell with use of WinForms. 
 
