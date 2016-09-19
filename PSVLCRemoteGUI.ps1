@@ -246,9 +246,9 @@ Param	(
 				foreach ($Item in $script:listViewPlaylist.Items) {
 					$ID = $Item.Tag.Id
 					if ($ID -eq $Script:CurrentStatus.Currentplid) {
-						$Item.ForeColor = "Blue"
+						$Item.ForeColor = Get-VLCRemoteThemeForeground $script:ThemeElement_PlaylistCurrent
 					} else {
-						$Item.ForeColor = "Black"
+						$Item.ForeColor = Get-VLCRemoteThemeForeground $script:ThemeElement_Playlist
 					}
 				}
 			}
@@ -401,8 +401,12 @@ Param	(
 			$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
 			$_.Size = New-Object System.Drawing.Size($labelWidth, $lblTitleHeight)
 			$_.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
-			$_.BackColor = [System.Drawing.Color]::Transparent
-			$_.ForeColor = [System.Drawing.Color]::Blue
+			#$_.BackColor = [System.Drawing.Color]::Transparent
+			#$_.ForeColor = [System.Drawing.Color]::Blue
+		
+			$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_PlayerDisplay
+			$_.ForeColor = Get-VLCRemoteThemeForeground $script:ThemeElement_PlayerDisplay 
+		
 			$_.Margin = New-Object System.Windows.Forms.Padding (0)
 			$_.Padding = New-Object System.Windows.Forms.Padding (0,0,0,0)
 			$_.Text = ""
@@ -442,8 +446,10 @@ Param	(
 		$_.AutoSize = $False
 		$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
 		$_.Size = New-Object System.Drawing.Size($trackbarWidth,$trackbarHeight)
-		$_.BackColor = [System.Drawing.Color]::CornSilk
-
+		#$_.BackColor = [System.Drawing.Color]::CornSilk
+		$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_Player
+		$_.ForeColor = Get-VLCRemoteThemeForeground $script:ThemeElement_Player 
+		
 		$_.Margin = New-Object System.Windows.Forms.Padding (0)
 		$_.Padding = New-Object System.Windows.Forms.Padding (0)
 		$_.Orientation = "Horizontal"
@@ -490,7 +496,9 @@ Param	(
 	$picBoxPlayPause | % {
 		$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
 		$_.Size = New-Object System.Drawing.Size($picboxCOntrolWidthSmall, $picboxCOntrolWidthSmall)
-		$_.BackColor = [System.Drawing.Color]::Transparent
+		#$_.BackColor = [System.Drawing.Color]::Transparent
+		$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_PlayerPictureButton
+				
 		$_.Margin = New-Object System.Windows.Forms.Padding (0)	
 		$_.Image = $script:ImagePlay
 		$_.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::StretchImage
@@ -501,7 +509,9 @@ Param	(
 	$picBoxPrevTrack | % {
 		$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
 		$_.Size = New-Object System.Drawing.Size($picboxCOntrolWidthSmall, $picboxCOntrolWidthSmall)
-		$_.BackColor = [System.Drawing.Color]::Transparent
+		#$_.BackColor = [System.Drawing.Color]::Transparent
+		$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_PlayerPictureButton
+		
 		$_.Margin = New-Object System.Windows.Forms.Padding (0)	
 		$_.Image = $script:ImageStepback
 		$_.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::StretchImage
@@ -511,7 +521,9 @@ Param	(
 	$picBoxStop | % {
 		$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
 		$_.Size = New-Object System.Drawing.Size($picboxCOntrolWidthSmall, $picboxCOntrolWidthSmall)
-		$_.BackColor = [System.Drawing.Color]::Transparent
+		#$_.BackColor = [System.Drawing.Color]::Transparent
+		$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_PlayerPictureButton
+		
 		$_.Margin = New-Object System.Windows.Forms.Padding (0)	
 		$_.Image = $script:ImageStop
 		$_.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::StretchImage
@@ -521,7 +533,9 @@ Param	(
 	$picBoxNextTrack | % {
 		$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
 		$_.Size = New-Object System.Drawing.Size($picboxCOntrolWidthSmall, $picboxCOntrolWidthSmall)
-		$_.BackColor = [System.Drawing.Color]::Transparent
+		#$_.BackColor = [System.Drawing.Color]::Transparent
+		$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_PlayerPictureButton
+		
 		$_.Margin = New-Object System.Windows.Forms.Padding (0)	
 		$_.Image = $script:ImageStepforward
 		$_.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::StretchImage
@@ -531,7 +545,9 @@ Param	(
 	$picBoxScreen | % {
 		$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
 		$_.Size = New-Object System.Drawing.Size($picboxCOntrolWidthSmall, $picboxCOntrolWidthSmall)
-		$_.BackColor = [System.Drawing.Color]::Transparent
+		#$_.BackColor = [System.Drawing.Color]::Transparent
+		$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_PlayerPictureButton
+		
 		$_.Margin = New-Object System.Windows.Forms.Padding (0)	
 		$_.Image = $script:ImageScreenNormal
 		$_.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::StretchImage
@@ -541,7 +557,9 @@ Param	(
 	$picBoxLoop | % {
 		$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
 		$_.Size = New-Object System.Drawing.Size($picboxCOntrolWidthSmall, $picboxCOntrolWidthSmall)
-		$_.BackColor = [System.Drawing.Color]::Transparent
+		#$_.BackColor = [System.Drawing.Color]::Transparent
+		$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_PlayerPictureButton
+		
 		$_.Margin = New-Object System.Windows.Forms.Padding (0)	
 		$_.Image = $script:ImageNoLoop	
 		$_.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::StretchImage
@@ -551,7 +569,9 @@ Param	(
 	$picBoxRepeat | % {
 		$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
 		$_.Size = New-Object System.Drawing.Size($picboxCOntrolWidthSmall, $picboxCOntrolWidthSmall)
-		$_.BackColor = [System.Drawing.Color]::Transparent
+		#$_.BackColor = [System.Drawing.Color]::Transparent
+		$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_PlayerPictureButton
+		
 		$_.Margin = New-Object System.Windows.Forms.Padding (0)	
 		$_.Image = $script:ImageNoRepeat	
 		$_.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::StretchImage
@@ -561,7 +581,9 @@ Param	(
 	$picBoxRandom | % {
 		$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
 		$_.Size = New-Object System.Drawing.Size($picboxCOntrolWidthSmall, $picboxCOntrolWidthSmall)
-		$_.BackColor = [System.Drawing.Color]::Transparent
+		#$_.BackColor = [System.Drawing.Color]::Transparent
+		$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_PlayerPictureButton
+		
 		$_.Margin = New-Object System.Windows.Forms.Padding (0)	
 		$_.Image = $script:ImageNoRandom
 		$_.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::StretchImage
@@ -571,7 +593,9 @@ Param	(
 	$picBoxMute | % {
 		$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
 		$_.Size = New-Object System.Drawing.Size($picboxCOntrolWidthSmall, $picboxCOntrolWidthSmall)
-		$_.BackColor = [System.Drawing.Color]::Transparent
+		#$_.BackColor = [System.Drawing.Color]::Transparent
+		$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_PlayerPictureButton
+		
 		$_.Margin = New-Object System.Windows.Forms.Padding (0)	
 		$_.Image = $script:ImageMuteOff
 		$_.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::StretchImage
@@ -584,8 +608,10 @@ Param	(
 		$_.Autosize = $false
 		$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
 		$_.Size = New-Object System.Drawing.Size($calcWidth,$trackbarHeight)
-		$_.BackColor = [System.Drawing.Color]::CornSilk
-
+		#$_.BackColor = [System.Drawing.Color]::CornSilk
+		$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_Player
+		$_.ForeColor = Get-VLCRemoteThemeForeground $script:ThemeElement_Player 
+		
 		$_.Margin = New-Object System.Windows.Forms.Padding (0)
 		$_.Orientation = "Horizontal"
 		$_.TickFrequency = 48
@@ -624,7 +650,9 @@ Param	(
 	$picBoxPlaylistSelect | % {
 		$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
 		$_.Size = New-Object System.Drawing.Size($picboxCOntrolWidthSmall, $picboxCOntrolWidthSmall)
-		$_.BackColor = [System.Drawing.Color]::Transparent
+		#$_.BackColor = [System.Drawing.Color]::Transparent
+		$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_PlayerPictureButton
+		
 		$_.Margin = New-Object System.Windows.Forms.Padding (0)	
 		$_.Image = $script:ImagePlaylistSelect
 		$_.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::StretchImage
@@ -633,7 +661,9 @@ Param	(
 	$picBoxSelectFiles | % {
 		$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
 		$_.Size = New-Object System.Drawing.Size($picboxCOntrolWidthSmall, $picboxCOntrolWidthSmall)
-		$_.BackColor = [System.Drawing.Color]::Transparent
+		#$_.BackColor = [System.Drawing.Color]::Transparent
+		$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_PlayerPictureButton
+
 		$_.Margin = New-Object System.Windows.Forms.Padding (0)	
 		$_.Image = $script:ImageSelectFiles
 		$_.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::StretchImage
@@ -642,7 +672,9 @@ Param	(
 	$picBoxNetworkStream | % {
 		$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
 		$_.Size = New-Object System.Drawing.Size($picboxCOntrolWidthSmall, $picboxCOntrolWidthSmall)
-		$_.BackColor = [System.Drawing.Color]::Transparent
+		#$_.BackColor = [System.Drawing.Color]::Transparent
+		$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_PlayerPictureButton
+
 		$_.Margin = New-Object System.Windows.Forms.Padding (0)	
 		$_.Image = $script:ImageStream
 		$_.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::StretchImage
@@ -651,7 +683,9 @@ Param	(
 	$picBoxHTTPLink | % {
 		$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
 		$_.Size = New-Object System.Drawing.Size($picboxCOntrolWidthSmall, $picboxCOntrolWidthSmall)
-		$_.BackColor = [System.Drawing.Color]::Transparent
+		#$_.BackColor = [System.Drawing.Color]::Transparent
+		$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_PlayerPictureButton
+
 		$_.Margin = New-Object System.Windows.Forms.Padding (0)	
 		$_.Image = $script:ImageHTTPLink
 		$_.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::StretchImage
@@ -661,7 +695,9 @@ Param	(
 	$picBoxExit | % {
 		$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
 		$_.Size = New-Object System.Drawing.Size($picboxCOntrolWidthSmall, $picboxCOntrolWidthSmall)
-		$_.BackColor = [System.Drawing.Color]::Transparent
+		#$_.BackColor = [System.Drawing.Color]::Transparent
+		$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_PlayerPictureButton
+
 		$_.Margin = New-Object System.Windows.Forms.Padding (0)	
 		$_.Image = $script:ImageExit
 		$_.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::StretchImage
@@ -670,7 +706,9 @@ Param	(
 	$picBoxScriptSettings | % {
 		$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
 		$_.Size = New-Object System.Drawing.Size($picboxCOntrolWidthSmall, $picboxCOntrolWidthSmall)
-		$_.BackColor = [System.Drawing.Color]::Transparent
+		#$_.BackColor = [System.Drawing.Color]::Transparent
+		$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_PlayerPictureButton
+
 		$_.Margin = New-Object System.Windows.Forms.Padding (0)	
 		$_.Image = $script:ImageScriptSettings
 		$_.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::StretchImage
@@ -679,7 +717,9 @@ Param	(
 	$picBoxPlaySettings | % {
 		$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
 		$_.Size = New-Object System.Drawing.Size($picboxCOntrolWidthSmall, $picboxCOntrolWidthSmall)
-		$_.BackColor = [System.Drawing.Color]::Transparent
+		#$_.BackColor = [System.Drawing.Color]::Transparent
+		$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_PlayerPictureButton
+
 		$_.Margin = New-Object System.Windows.Forms.Padding (0)	
 		$_.Image  = $script:ImagePlaySettings
 		$_.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::StretchImage
@@ -697,7 +737,9 @@ Param	(
 	$picBoxTraydown  | % {
 		$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
 		$_.Size = New-Object System.Drawing.Size($picboxCOntrolWidthSmall, $picboxCOntrolWidthSmall)
-		$_.BackColor = [System.Drawing.Color]::Transparent
+		#$_.BackColor = [System.Drawing.Color]::Transparent
+		$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_PlayerPictureButton
+
 		$_.Margin = New-Object System.Windows.Forms.Padding (0)	
 		$_.Image = $script:ImageTrayDown
 		$_.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::StretchImage
@@ -707,7 +749,11 @@ Param	(
 		#$_.AutosizeMode = [System.Windows.Forms.AutoSizeMode]::GrowAndShrink	
 		$_.Anchor =([System.Windows.Forms.AnchorStyles]::Top -bor [System.Windows.Forms.AnchorStyles]::Left -bor [System.Windows.Forms.AnchorStyles]::Right)
 		$_.Dock = [System.Windows.Forms.DockStyle]::Fill
-		$_.BackColor = [System.Drawing.Color]::Wheat
+		#$_.BackColor = [System.Drawing.Color]::Wheat
+		
+		$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_Player
+		$_.ForeColor = Get-VLCRemoteThemeForeground $script:ThemeElement_Player 
+		
 		$_.Margin = New-Object System.Windows.Forms.Padding (0)
 		$_.Padding = New-Object System.Windows.Forms.Padding (0,0,0,0)
 		$_.Name = "panelPlaylistControl"
@@ -746,7 +792,10 @@ Param	(
 	}		
 	$script:formMainDialog | % {
 		$_.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::FixedDialog
-		$_.BackColor = [System.Drawing.Color]::CornSilk
+		#$_.BackColor = [System.Drawing.Color]::CornSilk
+		$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_Player
+		$_.ForeColor = Get-VLCRemoteThemeForeground $script:ThemeElement_Player 
+		
 		$_.Controls.Add($tablePanelDialog)
 		$_.Name = "formDialogController"
 		$_.ControlBox = $false
@@ -1261,16 +1310,17 @@ Param	(
 		$buttonSet 			= New-Object System.Windows.Forms.Button
 
 	$xPos = 5
-	$yPos = 5
+	$yPos = 10
 	$dist = 3
 	$labelWidth = 120
 	$labelHeight = 20
 	
 	$formWidth = 400 
-	$formHeight = 10 + $labelHeight
+	$formHeight = 20 + $labelHeight
 	
 	
 	$lblText | % {
+		$_.AutoSize = $False
 		$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
 		$_.Size = New-Object System.Drawing.Size($labelWidth, $labelHeight)
 		$_.TextAlign = [System.Drawing.ContentAlignment]::MiddleLeft
@@ -1280,6 +1330,7 @@ Param	(
 	}
 	$xPos +=($labelWidth + $dist)
 	$dateTimePicker  | % {
+		$_.AutoSize = $False
 		$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
 		$_.Size = New-Object System.Drawing.Size($labelWidth, $labelHeight)
 		#$_.BackColor = [System.Drawing.Color]::Transparent
@@ -1289,7 +1340,9 @@ Param	(
 	}
 	$xPos +=($labelWidth + $dist)
 	$buttonSet | % {
+		$_.AutoSize = $False
 		$_.BackColor = [System.Drawing.SystemColors]::Control
+		$_.ForeColor = [System.Drawing.Color]::Black
 		$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
 		$_.Name = "ButtonSet"
 		$_.Size = New-Object System.Drawing.Size($labelWidth, $labelHeight)
@@ -1298,8 +1351,12 @@ Param	(
 		$_.TabStop = $false
 	}
 	$formPlayPositionDialog | % {
+		$_.AutoSize = $False
 		$_.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::FixedToolWindow
-		$_.BackColor = [System.Drawing.Color]::CornSilk
+		#$_.BackColor = [System.Drawing.Color]::CornSilk
+		$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_Player
+		$_.ForeColor = Get-VLCRemoteThemeForeground $script:ThemeElement_Player 
+				
 		$_.Controls.Add($lblText)
 		$_.Controls.Add($dateTimePicker)
 		$_.Controls.Add($buttonSet)
@@ -1350,16 +1407,17 @@ Param	(
 		$buttonSet 			= New-Object System.Windows.Forms.Button
 
 	$xPos = 5
-	$yPos = 5
+	$yPos = 10
 	$dist = 3
 	$labelWidth = 120
 	$labelHeight = 20
 	
 	$formWidth = 506
-	$formHeight = 10 + $labelHeight
+	$formHeight = 20 + $labelHeight
 	
 	
 	$lblText | % {
+		$_.AutoSize = $False
 		$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
 		$_.Size = New-Object System.Drawing.Size($labelWidth, $labelHeight)
 		$_.TextAlign = [System.Drawing.ContentAlignment]::MiddleLeft
@@ -1369,6 +1427,7 @@ Param	(
 	}
 	$xPos +=($labelWidth + $dist)
 	$textboxDirectLink  | % {
+		$_.AutoSize = $False
 		$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
 		$_.Size = New-Object System.Drawing.Size(250, $labelHeight)
 		#$_.BackColor = [System.Drawing.Color]::Transparent
@@ -1376,7 +1435,9 @@ Param	(
 	}
 	$xPos +=(250 + $dist)
 	$buttonSet | % {
+		$_.AutoSize = $False
 		$_.BackColor = [System.Drawing.SystemColors]::Control
+		$_.ForeColor = [System.Drawing.Color]::Black
 		$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
 		$_.Name = "ButtonSet"
 		$_.Size = New-Object System.Drawing.Size($labelWidth, $labelHeight)
@@ -1385,8 +1446,12 @@ Param	(
 		$_.TabStop = $false
 	}
 	$formDirectLinkDialog | % {
+		$_.AutoSize = $False
 		$_.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::FixedToolWindow
-		$_.BackColor = [System.Drawing.Color]::CornSilk
+		#$_.BackColor = [System.Drawing.Color]::CornSilk
+		$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_NetworkStreamsManager
+		$_.ForeColor = Get-VLCRemoteThemeForeground $script:ThemeElement_NetworkStreamsManager
+		
 		$_.Controls.Add($lblText)
 		$_.Controls.Add($textboxDirectLink)
 		$_.Controls.Add($buttonSet)
@@ -1891,7 +1956,7 @@ Param	(
 		#$_.Autosize = $True
 		#$_.AutosizeMode = [System.Windows.Forms.AutoSizeMode]::GrowAndShrink
 		$_.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::FixedToolWindow
-		$_.BackColor = [System.Drawing.Color]::CornSilk
+		$_.BackColor = [System.Drawing.Color]::White
 		$_.Controls.Add($PanelMain)
 		$_.Name = "formPlaySettingsDialog"
 		$_.ControlBox = $true
@@ -2051,7 +2116,7 @@ Param	(
 
 	})
 	# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	$Script:CurrentStatus | out-host
+	#$Script:CurrentStatus | out-host
 	
 	Set-DialogValues
 	

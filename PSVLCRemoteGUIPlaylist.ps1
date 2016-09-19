@@ -96,7 +96,10 @@ Param	(
 		$_.Name = "listViewPlaylist"	
 		$_.CheckBoxes = $False
 		$_.DataBindings.DefaultDataSourceUpdateMode = 0
-		$_.BackColor = [System.Drawing.Color]::CornSilk
+		#$_.BackColor = [System.Drawing.Color]::CornSilk
+		$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_Playlist 
+		$_.ForeColor = Get-VLCRemoteThemeForeground $script:ThemeElement_Playlist 
+		
 		$_.Dock = [System.Windows.Forms.DockStyle]::Fill
 		$_.Margin = New-Object System.Windows.Forms.Padding (0)
 		$_.Padding = New-Object System.Windows.Forms.Padding (0)
@@ -168,7 +171,10 @@ Param	(
 		#$_.Anchor =([System.Windows.Forms.AnchorStyles]::Top -bor [System.Windows.Forms.AnchorStyles]::Left -bor [System.Windows.Forms.AnchorStyles]::Right)
 		$_.Size = New-Object System.Drawing.Size($formWidth, ($picboxCOntrolWidthSmall+(2*$borderDist)))
 		$_.Dock = [System.Windows.Forms.DockStyle]::Bottom
-		$_.BackColor = [System.Drawing.Color]::Wheat
+		#$_.BackColor = [System.Drawing.Color]::Wheat
+		$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_PlaylistBottom 
+		$_.ForeColor = Get-VLCRemoteThemeForeground $script:ThemeElement_PlaylistBottom 
+		
 		$_.Margin = New-Object System.Windows.Forms.Padding (0)
 		$_.Padding = New-Object System.Windows.Forms.Padding (0,0,0,0)
 		$_.Name = "panelPlaylistControl"
@@ -193,7 +199,10 @@ Param	(
 	
 	$script:formMainPlaylist | % {
 		$_.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::Sizable
-		$_.BackColor = [System.Drawing.Color]::CornSilk
+		#$_.BackColor = [System.Drawing.Color]::CornSilk
+		$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_Playlist 
+		$_.ForeColor = Get-VLCRemoteThemeForeground $script:ThemeElement_Playlist 
+		
 		$_.Name = "formMainPlaylist"
 		$_.ControlBox = $false
 		$_.ShowInTaskbar = $false

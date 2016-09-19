@@ -120,7 +120,9 @@ Param	(
 		$MarqueeController.Graphics.PixelOffsetMode = 'HighQuality'				# Use this property to specify either higher quality, slower rendering, or lower quality, faster rendering of the contents of this Graphics object.
 		$MarqueeController.Graphics.InterpolationMode = 'HighQualityBicubic'	# The interpolation mode determines how intermediate values between two endpoints are calculated.
 		
-		$MarqueeController.brush = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::Blue)
+		$ForeColor = Get-VLCRemoteThemeForeground $script:ThemeElement_PlayerDisplayMarquee
+		
+		$MarqueeController.brush = New-Object System.Drawing.SolidBrush($ForeColor)
 		Write-Output $MarqueeController
 }
 #
@@ -135,7 +137,8 @@ Param	(
 		#$bitmap   = New-Object System.Drawing.Bitmap($MC.Width,$MC.Height)
 		#$bitmap.MakeTransparent()		
 		#$Graphics = [System.Drawing.Graphics]::FromImage($bitmap)
-		$MC.Graphics.Clear('CornSilk')
+		$BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_PlayerDisplayMarquee
+		$MC.Graphics.Clear($BackColor)
 		
 		#$StringFormat = New-Object System.Drawing.StringFormat
 		#$StringFormat.Alignment = 'Near'

@@ -881,7 +881,10 @@ Param	(
 		$_.Name = "listView"	
 		$_.CheckBoxes = $False
 		$_.DataBindings.DefaultDataSourceUpdateMode = 0
-		$_.BackColor = [System.Drawing.Color]::Wheat
+		#$_.BackColor = [System.Drawing.Color]::Wheat
+		$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_NetworkStreamsManager
+		$_.ForeColor = Get-VLCRemoteThemeForeground $script:ThemeElement_NetworkStreamsManager
+
 		$_.Dock = [System.Windows.Forms.DockStyle]::Fill
 		#$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
 		#$_.Size = New-Object System.Drawing.Size(($listViewWidth),($listViewHeight))
@@ -890,7 +893,7 @@ Param	(
 		$_.Padding = New-Object System.Windows.Forms.Padding (0)
 		$_.HeaderStyle = "Clickable"
 		$_.FullRowSelect = $True
-		$_.GridLines = $True
+		$_.GridLines = $False
 		$_.HideSelection = $False
 		$_.MultiSelect = $true		
 		$_.UseCompatibleStateImageBehavior = $False
@@ -1000,6 +1003,9 @@ Param	(
 		$_.Size = New-Object System.Drawing.Size($ButtonWidth, $ButtonHeight)
 		$_.Text = "Favorites only"
 		$_.TabStop = $false
+		$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_NetworkStreamsManager
+		$_.ForeColor = Get-VLCRemoteThemeForeground $script:ThemeElement_NetworkStreamsManager
+
 	}
 	$PanelRight | % {
 		$_.Autosize = $True
@@ -1038,7 +1044,10 @@ Param	(
 		#$_.Anchor =([System.Windows.Forms.AnchorStyles]::Top -bor [System.Windows.Forms.AnchorStyles]::Left -bor [System.Windows.Forms.AnchorStyles]::Right)
 		$_.Size = New-Object System.Drawing.Size($formWidth, ($picboxCOntrolWidthSmall+(2*$borderDist)))
 		$_.Dock = [System.Windows.Forms.DockStyle]::Bottom
-		$_.BackColor = [System.Drawing.Color]::Wheat
+		#$_.BackColor = [System.Drawing.Color]::Wheat
+		$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_NetworkStreamsManagerBottom
+		$_.ForeColor = Get-VLCRemoteThemeForeground $script:ThemeElement_NetworkStreamsManagerBottom
+		
 		$_.Margin = New-Object System.Windows.Forms.Padding (0)
 		$_.Padding = New-Object System.Windows.Forms.Padding (0,0,0,0)
 		$_.Name = "panelBottom"
@@ -1061,7 +1070,9 @@ Param	(
 	}
 	$script:formMainNetworkStreamsManager | % {
 		$_.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::Sizable
-		$_.BackColor = [System.Drawing.Color]::CornSilk
+		#$_.BackColor = [System.Drawing.Color]::CornSilk
+		$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_NetworkStreamsManager
+		
 		$_.Controls.Add($panelMain)
 		$_.Name = "formDialogController"
 		$_.ControlBox = $false
@@ -1069,7 +1080,7 @@ Param	(
 		$_.MinimizeBox = $False
 		$_.ShowInTaskbar = $False
 		$_.Icon = $script:ScriptIcon
-		$_.Text = "$script:ScriptName : Network Streams Manager : !!! ---Experimental--- !!!"
+		$_.Text = "$script:ScriptName : Network Streams Manager"
 		
 		$_.Font = $Script:FontBase
 		
@@ -1373,7 +1384,10 @@ Param	(
 		$_.Name = "ListViewNNetworkStreamFavorite"	
 		$_.CheckBoxes = $False
 		$_.DataBindings.DefaultDataSourceUpdateMode = 0
-		$_.BackColor = [System.Drawing.Color]::Wheat
+		#$_.BackColor = [System.Drawing.Color]::Wheat
+		$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_NetworkStreamsManager
+		$_.ForeColor = Get-VLCRemoteThemeForeground $script:ThemeElement_NetworkStreamsManager
+
 		$_.Dock = [System.Windows.Forms.DockStyle]::Fill
 		$_.Margin = New-Object System.Windows.Forms.Padding (0)
 		$_.Padding = New-Object System.Windows.Forms.Padding (0)
@@ -1394,7 +1408,10 @@ Param	(
 	
 	$formSelectNetworkStreamFavorite | % {
 		$_.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::SizableToolWindow
-		$_.BackColor = [System.Drawing.Color]::CornSilk
+		#$_.BackColor = [System.Drawing.Color]::CornSilk
+		$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_NetworkStreamsManager
+		$_.ForeColor = Get-VLCRemoteThemeForeground $script:ThemeElement_NetworkStreamsManager
+		
 		$_.Controls.Add($ListViewNetworkStreamFavorite)
 		$_.Name = "formSelectNetworkStreamFavorite"
 		$_.ControlBox = $false
@@ -1402,7 +1419,7 @@ Param	(
 		$_.MinimizeBox = $False
 		$_.ShowInTaskbar = $False
 		$_.Icon = $script:ScriptIcon
-		$_.Text = "$script:ScriptName : Select Network Stream Favorite : !!! ---Experimental--- !!!"
+		$_.Text = "$script:ScriptName : Select Network Stream Favorite"
 		
 		$_.Font = $Script:FontBase
 		

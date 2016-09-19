@@ -23,9 +23,9 @@ Set-StrictMode -Version Latest
 $script:DebugLevel = 0
 #region ScriptVariables
 $script:ScriptName		= "PS VLC Remote"
-$script:ScriptDate		= "7. Mai 2016"
+$script:ScriptDate		= "19. September 2016"
 $script:ScriptAuthor	= "Axel Anderson"					
-$script:ScriptVersion	= "0.6.1"
+$script:ScriptVersion	= "0.7.0"
 $script:ConfigVersion	= "1"
 
 $Script:VersionHistory = @"
@@ -71,6 +71,7 @@ $Script:VersionHistory = @"
             0.5.3  02.02.2016 Change start of script, check if DefaultConnection is alive, otherwise start with Connection-Manager
             0.6.0  27.02.2016 Marquee implemented, comes without settings to switch between Label and Marquee
             0.6.1   7.05.2016 Marquee Configuration implemented
+            0.7.0  19.09.2016 Theme implemented (Standard and Dark)
 			
 "@
 <#
@@ -190,10 +191,12 @@ Param	(
 . (Join-Path $script:WorkingDirectory PSVLCRemoteGUIPlaylist.ps1)
 . (Join-Path $script:WorkingDirectory PSVLCRemoteGUIFileExplorer.ps1)
 . (Join-Path $script:WorkingDirectory PSVLCRemoteNetworkStreams.ps1)
+. (Join-Path $script:WorkingDirectory PSVLCTheme.ps1)
 
 if (Test-Path (Join-Path $script:WorkingDirectory PSVLCRemoteMarquee.ps1)) {
 . (Join-Path $script:WorkingDirectory PSVLCRemoteMarquee.ps1)
 }
+
 #$Script:VersionText | out-Host
 
 $Description	= "LOCALHOST"

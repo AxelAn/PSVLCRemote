@@ -128,6 +128,9 @@ Param	()
 
 	$UInt32Value = Get-ScriptSettingsValue "UseMarqueeOnMainPlayer" -DefaultValue 1
 	$script:UseMarqueeOnMainPlayer	= if ($UInt32Value -eq 1) {$True} else {$False}
+	
+	$Theme = Get-ScriptSettingsValue "Theme" -DefaultValue $script:VLVRemoteCurrentTheme
+	Set-VLCRemoteTheme $Theme
 }
 Function Load-Settings {
 [CmdletBinding()]
@@ -155,6 +158,7 @@ Param( )
 	# ADD HERE ALL other required settings
 	#
 	
+			
 	try {
 		$script:xmlConfig.AcceptChanges()
 		[void]$script:xmlConfig.WriteXml($script:xmlConfigFilename)
@@ -696,6 +700,8 @@ Param	(
 					
 					$checkboxUseMarqueeOnMainPlayer			= New-Object System.Windows.Forms.Checkbox
 					
+					$lblTheme						  		= New-Object System.Windows.Forms.Label
+					$comboBoxTheme							= New-Object System.Windows.Forms.ComboBox
 		$PanelBottom = New-Object System.Windows.Forms.Panel
 			$buttonSet = New-Object System.Windows.Forms.Button		
 	# ---------------------------------------------------------------------------------------------------------------------
@@ -1036,6 +1042,32 @@ Param	(
 		$_.Checked = if ($script:UseMarqueeOnMainPlayer) {$True} else {$False}
 	}	
 	# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	$xPos = 5
+	$yPos += ($labelHeight + $dist)
+	$lblTheme | % {
+		$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
+		$_.Size = New-Object System.Drawing.Size($labelWidth, $labelHeight)
+		$_.Margin = New-Object System.Windows.Forms.Padding (0,0,0,0)
+		$_.TextAlign = [System.Drawing.ContentAlignment]::MiddleLeft
+		$_.BackColor = [System.Drawing.Color]::Transparent
+		$_.TabStop = $false
+		$_.Text = "Theme (Restart required)"
+	}
+	$xPos +=($labelWidth + $dist)
+	$comboBoxTheme| % {
+		$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
+		$_.Size = New-Object System.Drawing.Size(120, $labelHeight)
+		#$_.BackColor = [System.Drawing.Color]::Transparent
+		$_.DropDownHeight = 400
+		$_.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDown
+		$_.FormattingEnabled = $True		
+		$_.TabStop = $false	
+	}
+		$comboBoxTheme.Items.Clear()
+		$comboBoxTheme.Items.Add($Script:ThemeStandard)
+		$comboBoxTheme.Items.Add($Script:ThemeDark)
+		$comboBoxTheme.Text = $script:VLVRemoteCurrentTheme
+	# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	
 	$PanelInterfaceSettings | % {
 		$_.Dock = [System.Windows.Forms.DockStyle]::Fill
@@ -1066,6 +1098,9 @@ Param	(
 		$_.Controls.Add($textBoxOpacityDeactivate_NETWORKSTREAMS)	
 		
 		$_.Controls.Add($checkboxUseMarqueeOnMainPlayer)		
+
+		$_.Controls.Add($lblTheme)		
+		$_.Controls.Add($comboboxTheme)		
 	}
 #endregion INTERFACE Settings
 	# ---------------------------------------------------------------------------------------------------------------------	
@@ -1118,7 +1153,7 @@ Param	(
 	# ---------------------------------------------------------------------------------------------------------------------	
 	$script:formSettingsDialog | % {
 		$_.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::FixedDialog
-		$_.BackColor = [System.Drawing.Color]::CornSilk
+		$_.BackColor = [System.Drawing.Color]::White
 		$_.Controls.Add($panelMain)
 		$_.Controls.Add($PanelBottom)
 		$_.Margin = New-Object System.Windows.Forms.Padding (0)
@@ -1232,6 +1267,9 @@ Param	(
 
 		$UIntValue = if ($checkboxUseMarqueeOnMainPlayer.Checked) {1} else {0}	
 		Set-ScriptSettingsValue "UseMarqueeOnMainPlayer" $UIntValue
+		
+		$StringValue = $comboboxTheme.Text
+		Set-ScriptSettingsValue "Theme" $StringValue		
 		
 	})
 	# ---------------------------------------------------------------------------------------------------------------------	

@@ -308,7 +308,11 @@ Param	(
 	$script:TreeViewFolder | % {
 		#$_.Location = New-Object System.Drawing.Point(0,0)
 		#$_.Size = New-Object System.Drawing.Size($treeviewWidth,$formHeight)
-		$_.BackColor = [System.Drawing.Color]::CornSilk
+		#$_.BackColor = [System.Drawing.Color]::CornSilk
+		$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_FileExplorer 
+		$_.ForeColor = Get-VLCRemoteThemeForeground $script:ThemeElement_FileExplorer 
+				
+
 		$_.Dock = [System.Windows.Forms.DockStyle]::Fill
 		
 		$_.Margin = New-Object System.Windows.Forms.Padding (0)
@@ -342,7 +346,11 @@ Param	(
 		$_.Name = "ListViewFiles"	
 		$_.CheckBoxes = $False
 		$_.DataBindings.DefaultDataSourceUpdateMode = 0
-		$_.BackColor = [System.Drawing.Color]::CornSilk
+		#$_.BackColor = [System.Drawing.Color]::CornSilk
+		
+		$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_FileExplorer 
+		$_.ForeColor = Get-VLCRemoteThemeForeground $script:ThemeElement_FileExplorer 
+		
 		$_.Dock = [System.Windows.Forms.DockStyle]::Fill
 		#$_.Location = New-Object System.Drawing.Point(0, 0)
 		#$_.Size = New-Object System.Drawing.Size($listviewWidth,$formHeight)
@@ -432,7 +440,11 @@ Param	(
 		#$_.Anchor =([System.Windows.Forms.AnchorStyles]::Top -bor [System.Windows.Forms.AnchorStyles]::Left -bor [System.Windows.Forms.AnchorStyles]::Right)
 		$_.Size = New-Object System.Drawing.Size($formWidth, ($picboxCOntrolWidthSmall+(2*$borderDist)))
 		$_.Dock = [System.Windows.Forms.DockStyle]::Bottom
-		$_.BackColor = [System.Drawing.Color]::Wheat
+		#$_.BackColor = [System.Drawing.Color]::Wheat
+		$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_FileExplorerBottom 
+		$_.ForeColor = Get-VLCRemoteThemeForeground $script:ThemeElement_FileExplorerBottom 
+				
+		
 		$_.Margin = New-Object System.Windows.Forms.Padding (0)
 		$_.Padding = New-Object System.Windows.Forms.Padding (0,0,0,0)
 		$_.Name = "panelBottom"
@@ -457,7 +469,10 @@ Param	(
 	# ---------------------------------------------------------------------------------------------------------------------	
 	$script:formMainFileExplorer | % {
 		$_.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::Sizable
-		$_.BackColor = [System.Drawing.Color]::CornSilk
+		$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_FileExplorer 
+		$_.ForeColor = Get-VLCRemoteThemeForeground $script:ThemeElement_FileExplorer 
+		
+		#$_.BackColor = [System.Drawing.Color]::CornSilk
 		$_.Name = "formDialogFileExplorer"
 		$_.ControlBox = $false
 		$_.ShowInTaskbar = $false

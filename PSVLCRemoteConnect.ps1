@@ -135,7 +135,6 @@ Param	(
 		$_.Size = New-Object System.Drawing.Size($labelWidth, $labelHeight)
 		$_.TextAlign = [System.Drawing.ContentAlignment]::MiddleLeft
 		$ypos += ($labelHeight + $dist)
-		$_.BackColor = [System.Drawing.Color]::FromArgb(255,240,240,240)
 		$_.TabStop = $false
 	}
 	$xPos = 5 + $labelWidth + $dist
@@ -180,7 +179,8 @@ Param	(
 		#$_.AutosizeMode = [System.Windows.Forms.AutoSizeMode]::GrowAndShrink	
 		$_.Anchor =([System.Windows.Forms.AnchorStyles]::Top -bor [System.Windows.Forms.AnchorStyles]::Left -bor [System.Windows.Forms.AnchorStyles]::Right)
 		$_.Dock = [System.Windows.Forms.DockStyle]::Fill
-		$_.BackColor = [System.Drawing.Color]::FromArgb(255,255,224,192)
+		$_.BackColor = [System.Drawing.Color]::Transparent
+		
 		$_.Margin = New-Object System.Windows.Forms.Padding (0)
 		$_.Padding = New-Object System.Windows.Forms.Padding (0,0,0,0)
 		$_.Name = "panelTop"
@@ -204,6 +204,7 @@ Param	(
 	$buttonHeight = 20
 	$buttonOk | % {
 		$_.BackColor = [System.Drawing.SystemColors]::Control
+		$_.ForeColor = [System.Drawing.Color]::Black
 		$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
 		$_.Name = "OkButton"
 		$_.Size = New-Object System.Drawing.Size($buttonWidth, $buttonHeight)
@@ -215,6 +216,7 @@ Param	(
 	$xpos = $xPos + $buttonWidth + $dist
 	$buttonCancel | % {
 		$_.BackColor = [System.Drawing.SystemColors]::Control
+		$_.ForeColor = [System.Drawing.Color]::Black
 		$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
 		$_.Name = "CancelButton"
 		$_.Size = New-Object System.Drawing.Size($buttonWidth, $buttonHeight)
@@ -236,7 +238,7 @@ Param	(
 	}
 	$tablePanelDialog | % {
 		$_.Autosize = $True
-		$_.BackColor = [System.Drawing.Color]::FromArgb(255,245,245,220)
+		$_.BackColor = [System.Drawing.Color]::Transparent
 		$_.ColumnCount = 1
 		$_.ColumnStyles.Add((New-Object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent, 100))) | Out-Null
 		$_.Controls.Add($PanelBottom, 0, 1)
@@ -254,6 +256,7 @@ Param	(
 	$formDialog | % {
 		$_.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::FixedDialog
 		$_.BackColor = [System.Drawing.Color]::WhiteSmoke
+
 		$_.Controls.Add($tablePanelDialog)
 		$_.Name = "formDialog"
 		$_.ControlBox = $false
@@ -357,7 +360,10 @@ Param	()
 		$_.Name = "listView"	
 		$_.CheckBoxes = $False
 		$_.DataBindings.DefaultDataSourceUpdateMode = 0
-		$_.BackColor = [System.Drawing.Color]::Wheat
+		#$_.BackColor = [System.Drawing.Color]::Wheat
+		$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_ConnectionManager
+		$_.ForeColor = Get-VLCRemoteThemeForeground $script:ThemeElement_ConnectionManager
+		
 		$_.Dock = [System.Windows.Forms.DockStyle]::Fill
 		#$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
 		#$_.Size = New-Object System.Drawing.Size(($listViewWidth),($listViewHeight))
@@ -366,7 +372,7 @@ Param	()
 		$_.Padding = New-Object System.Windows.Forms.Padding (0)
 		$_.HeaderStyle = "NonClickable"
 		$_.FullRowSelect = $True
-		$_.GridLines = $True
+		$_.GridLines = $False
 		$_.HideSelection = $False
 		$_.MultiSelect = $false		
 		$_.UseCompatibleStateImageBehavior = $False
@@ -397,6 +403,7 @@ Param	()
 	$yPos = $borderDist
 	$buttonNew | % {
 		$_.BackColor = [System.Drawing.SystemColors]::Control
+		$_.ForeColor = [System.Drawing.Color]::Black
 		#$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
 		$_.Name = "ButtonNew"
 		$_.Size = New-Object System.Drawing.Size($ButtonWidth, $ButtonHeight)
@@ -406,6 +413,7 @@ Param	()
 	}
 	$buttonEdit | % {
 		$_.BackColor = [System.Drawing.SystemColors]::Control
+		$_.ForeColor = [System.Drawing.Color]::Black
 		#$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
 		$_.Name = "ButtonEdit"
 		$_.Size = New-Object System.Drawing.Size($ButtonWidth, $ButtonHeight)
@@ -415,6 +423,7 @@ Param	()
 	}
 	$buttonDelete | % {
 		$_.BackColor = [System.Drawing.SystemColors]::Control
+		$_.ForeColor = [System.Drawing.Color]::Black
 		#$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
 		$_.Name = "ButtonDelete"
 		$_.Size = New-Object System.Drawing.Size($ButtonWidth, $ButtonHeight)
@@ -424,6 +433,7 @@ Param	()
 	}
 	$buttonSetAsDefault | % {
 		$_.BackColor = [System.Drawing.SystemColors]::Control
+		$_.ForeColor = [System.Drawing.Color]::Black
 		#$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
 		$_.Name = "ButtonSetAsDefault"
 		$_.Size = New-Object System.Drawing.Size($ButtonWidth, $ButtonHeight)
@@ -433,6 +443,7 @@ Param	()
 	}
 	$buttonRemoveDefault | % {
 		$_.BackColor = [System.Drawing.SystemColors]::Control
+		$_.ForeColor = [System.Drawing.Color]::Black
 		#$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
 		$_.Name = "ButtonRemoveDefault"
 		$_.Size = New-Object System.Drawing.Size($ButtonWidth, $ButtonHeight)
@@ -442,6 +453,7 @@ Param	()
 	}
 	$buttonTest | % {
 		$_.BackColor = [System.Drawing.SystemColors]::Control
+		$_.ForeColor = [System.Drawing.Color]::Black
 		#$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
 		$_.Name = "ButtonTest"
 		$_.Size = New-Object System.Drawing.Size($ButtonWidth, $ButtonHeight)
@@ -451,6 +463,7 @@ Param	()
 	}
 	$buttonConnect | % {
 		$_.BackColor = [System.Drawing.SystemColors]::Control
+		$_.ForeColor = [System.Drawing.Color]::Black
 		#$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
 		$_.Name = "ButtonConnect"
 		$_.Size = New-Object System.Drawing.Size($ButtonWidth, $ButtonHeight)
@@ -464,7 +477,10 @@ Param	()
 		$_.AutosizeMode = [System.Windows.Forms.AutoSizeMode]::GrowAndShrink	
 		$_.Anchor =([System.Windows.Forms.AnchorStyles]::Top -bor [System.Windows.Forms.AnchorStyles]::Left -bor [System.Windows.Forms.AnchorStyles]::Right)
 		$_.Dock = [System.Windows.Forms.DockStyle]::Right
-		$_.BackColor = [System.Drawing.Color]::Transparent
+		#$_.BackColor = [System.Drawing.Color]::Transparent
+		$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_ConnectionManagerButtonPanel
+		$_.ForeColor = Get-VLCRemoteThemeForeground $script:ThemeElement_ConnectionManagerButtonPanel 
+		
 		$_.Margin = New-Object System.Windows.Forms.Padding (0)
 		$_.Padding = New-Object System.Windows.Forms.Padding (0,0,0,0)
 		$_.Name = "panelPosition"
