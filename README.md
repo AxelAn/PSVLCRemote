@@ -8,4 +8,4 @@ Control the VLC Player Local or Remote (on Windows-PC, Linux-PC, Rasberry PI ...
 
 Written in Powershell with use of WinForms. 
 
-Version : 0.7.0  19.09.2016
+Version : 0.7.1  20.09.2016
