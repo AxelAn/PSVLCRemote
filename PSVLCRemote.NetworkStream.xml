@@ -562,40 +562,6 @@
     <Favorite>0</Favorite>
   </StreamingStations>
   <StreamingStations>
-    <ID>B789DD59-B220-46B0-9456-B73AAF4B47AD</ID>
-    <StreamType>WebRadio</StreamType>
-    <Name>89.0 RTL</Name>
-    <URL>http://webradio.89.0rtl.de/livestream128.pls</URL>
-    <WebSite>http://www.89.0rtl.de/</WebSite>
-    <Region>Europe</Region>
-    <Country>Germany</Country>
-    <State />
-    <City />
-    <Genre>Top 40</Genre>
-    <Bitrate>128</Bitrate>
-    <Tags>Top 40, German</Tags>
-    <Rate>0</Rate>
-    <Annotation />
-    <Favorite>0</Favorite>
-  </StreamingStations>
-  <StreamingStations>
-    <ID>AC25A91D-F2DA-4D9E-BB24-B621180D3FAF</ID>
-    <StreamType>WebRadio</StreamType>
-    <Name>89.0 RTL In the Mix</Name>
-    <URL>http://webradio.89.0rtl.de/inthemix128.pls</URL>
-    <WebSite>http://www.89.0rtl.de</WebSite>
-    <Region>Europe</Region>
-    <Country>Germany</Country>
-    <State />
-    <City />
-    <Genre>Mix</Genre>
-    <Bitrate>128</Bitrate>
-    <Tags />
-    <Rate>0</Rate>
-    <Annotation />
-    <Favorite>0</Favorite>
-  </StreamingStations>
-  <StreamingStations>
     <ID>ECCE93FD-2FF2-4ABE-BFB6-C896DAC5C951</ID>
     <StreamType>WebRadio</StreamType>
     <Name>91.7 X FM</Name>
