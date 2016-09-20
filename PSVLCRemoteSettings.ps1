@@ -1059,13 +1059,12 @@ Param	(
 		$_.Size = New-Object System.Drawing.Size(120, $labelHeight)
 		#$_.BackColor = [System.Drawing.Color]::Transparent
 		$_.DropDownHeight = 400
-		$_.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDown
+		$_.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
 		$_.FormattingEnabled = $True		
 		$_.TabStop = $false	
 	}
 		$comboBoxTheme.Items.Clear()
-		$comboBoxTheme.Items.Add($Script:ThemeStandard)
-		$comboBoxTheme.Items.Add($Script:ThemeDark)
+		$comboBoxTheme.Items.AddRange($Script:ThemeList)
 		$comboBoxTheme.Text = $script:VLVRemoteCurrentTheme
 	# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	

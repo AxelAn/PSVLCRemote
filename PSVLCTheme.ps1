@@ -18,6 +18,9 @@ Set-StrictMode -Version Latest
 #
 $script:ThemeStandard	= "Standard"
 $script:ThemeDark 		= "Dark"
+$script:ThemeWhite 		= "White"
+
+$script:ThemeList		= @($script:ThemeStandard,$script:ThemeDark,$script:ThemeWhite)
 
 $script:ThemeElement_Player = "Player"
 $script:ThemeElement_PlayerPictureButton = "PlayerPictureButton"
@@ -98,6 +101,34 @@ $script:Colors.Add($script:ThemeDark,		(@{
 																										Back=[System.Drawing.Color]::DarkGray;});											
 											}))
 
+$script:Colors.Add($script:ThemeWhite,		(@{
+											   $script:ThemeElement_Player				=	(@{	Fore=[System.Drawing.Color]::Black;
+																								Back=[System.Drawing.Color]::White;});
+											   $script:ThemeElement_PlayerPictureButton	=	(@{	Fore=[System.Drawing.Color]::Black;
+																								Back=[System.Drawing.Color]::White;});
+											   $script:ThemeElement_PlayerDisplay		=	(@{	Fore=[System.Drawing.Color]::Black;
+																								Back=[System.Drawing.Color]::White;});
+											   $script:ThemeElement_PlayerDisplayMarquee=	(@{	Fore=[System.Drawing.Color]::Black;
+																								Back=[System.Drawing.Color]::White;});
+											   $script:ThemeElement_FileExplorer		=	(@{	Fore=[System.Drawing.Color]::Black;
+																								Back=[System.Drawing.Color]::White;});
+											   $script:ThemeElement_FileExplorerBottom 	=	(@{	Fore=[System.Drawing.Color]::Black;
+																								Back=[System.Drawing.Color]::White;});	
+											   $script:ThemeElement_Playlist			=	(@{	Fore=[System.Drawing.Color]::Black;
+																								Back=[System.Drawing.Color]::White;});
+											   $script:ThemeElement_PlaylistBottom 		=	(@{	Fore=[System.Drawing.Color]::Black;
+																								Back=[System.Drawing.Color]::White;});																									
+											   $script:ThemeElement_PlaylistCurrent		= 	(@{	Fore=[System.Drawing.Color]::Black;
+																								Back=[System.Drawing.Color]::White;});											
+											   $script:ThemeElement_NetworkStreamsManager= 	(@{	Fore=[System.Drawing.Color]::Black;
+																								Back=[System.Drawing.Color]::White;});											
+											   $script:ThemeElement_NetworkStreamsManagerBottom= 	(@{	Fore=[System.Drawing.Color]::Black;
+																										Back=[System.Drawing.Color]::White;});											
+											   $script:ThemeElement_ConnectionManager			= 	(@{	Fore=[System.Drawing.Color]::Black;
+																										Back=[System.Drawing.Color]::White;});											
+											   $script:ThemeElement_ConnectionManagerButtonPanel= 	(@{	Fore=[System.Drawing.Color]::Black;
+																										Back=[System.Drawing.Color]::White;});											
+											}))
 #
 # ---------------------------------------------------------------------------------------------------------------------------------
 #
@@ -107,10 +138,8 @@ Param	(
 			[string]$Theme
 		)
 
-	if ($Theme -eq $script:ThemeStandard) {
-		$script:VLVRemoteCurrentTheme	= $script:ThemeStandard
-	} elseif ($Theme -eq $script:ThemeDark) {
-		$script:VLVRemoteCurrentTheme	= $script:ThemeDark
+	if ($script:ThemeList -contains $Theme) {
+		$script:VLVRemoteCurrentTheme	= $Theme
 	} else {
 		$script:VLVRemoteCurrentTheme	= $script:ThemeStandard
 	}

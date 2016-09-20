@@ -171,7 +171,7 @@ Param	(
 			   if ($Script:CurrentStatus.NowPlaying -ne "") {
 					$TitleText = $Script:CurrentStatus.NowPlaying
 					if ($Script:CurrentStatus.title -ne "") {
-						$TitleText.Text += " ("+$Script:CurrentStatus.title+")"
+						$TitleText += " ("+$Script:CurrentStatus.title+")"
 					}
 				} elseif ($Script:CurrentStatus.title -eq "") {
 					$TitleText = $Script:CurrentStatus.filename
@@ -185,6 +185,9 @@ Param	(
 					}
 				}
 			}
+			$TitleText = $TitleText -replace "&amp;","&"
+			$TitleText = $TitleText -replace "amp;",""
+			
 			if ($script:UseMarqueeOnMainPlayer) {
 				$script:MarqueeController = Set-MarqueeText -MC $script:MarqueeController -PicBox $script:picBoxTitle -Text $TitleText
 			} else {

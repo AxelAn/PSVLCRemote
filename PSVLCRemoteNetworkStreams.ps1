@@ -21,6 +21,7 @@ Set-StrictMode -Version Latest
 #
 # ---------------------------------------------------------------------------------------------------------------------------------
 #
+#region ScriptVariable
 $script:xmlNetworkStreamFilename = Join-Path $script:PSVLCRemoteStreamConfigurationPath "PSVLCRemote.NetworkStream.xml"
 $script:NetworkStreamDataSetName = "StreamingStations"
 
@@ -33,6 +34,19 @@ $script:ListViewNetworkStreams = $null
 $script:checkboxShowFavorite = $null
 
 $script:SelectNetworkStreamFavoriteTag = $null
+
+$script:ExtendedNetworkStreamsManager = $True
+
+$contextMenuNetworkStreamsManager = New-Object System.Windows.Forms.ContextMenu
+	$menuItemNSM_New			= $contextMenuNetworkStreamsManager.MenuItems.Add("New")
+	$menuItemNSM_Edit			= $contextMenuNetworkStreamsManager.MenuItems.Add("Edit")	
+	$menuItemNSM_Delete			= $contextMenuNetworkStreamsManager.MenuItems.Add("Delete")	
+	$menuItemNSM_ToggleFavorite	= $contextMenuNetworkStreamsManager.MenuItems.Add("Toggle Favorite")	
+	$menuItemNSM_Play			= $contextMenuNetworkStreamsManager.MenuItems.Add("Play")	
+	$menuItemNSM_Reload			= $contextMenuNetworkStreamsManager.MenuItems.Add("Reload")	
+	$menuItemNSM_FavoritesOnly	= $contextMenuNetworkStreamsManager.MenuItems.Add("Favorites only")	
+	
+#endregion ScriptVariable
 #
 # ---------------------------------------------------------------------------------------------------------------------------------
 #
@@ -58,6 +72,57 @@ Function Select-FileDialog {
 		$retFN = $objForm.FileName
 	} 
 	$retFN
+}
+#
+# -----------------------------------------------------------------------------
+#
+Function Test-StreamURLAvailaible {
+[CmdletBinding()]
+Param	(
+			[string]$NetworkStreamName
+		)
+	$Available = $False
+
+	if ($NetworkStreamName -and ($NetworkStreamName -ne "")) {
+        $HTTP_Response = $Null
+        
+		# First we create the request.
+		try {
+			$HTTP_Request = [System.Net.WebRequest]::Create($NetworkStreamName)
+			$HTTP_Request.Method="GET"
+		} catch {
+			$HTTP_Request = $NULL
+		}
+		# We then get a response from the site.
+		if ($HTTP_Request -ne $null) {
+			try {
+				$HTTP_Response = $HTTP_Request.GetResponse()
+
+				# We then get the HTTP code as an integer.
+				$HTTP_Status = [int]$HTTP_Response.StatusCode
+
+				If ($HTTP_Status -eq 200) { 
+					$Available = $True
+				}
+
+				# Finally, we clean up the http request by closing it.
+				$HTTP_Response.Close()
+			} catch {
+				#$_ | select -expand Exception | select -expand InnerException | select * | Out-Host
+				$HTTP_Response = $Null
+			}
+        }
+		if (!$Available) {
+            try {
+                $Response = Invoke-WebRequest -Uri $NetworkStreamName  -TimeoutSec 5 -UseBasicParsing  -DisableKeepAlive
+                if ($Response.StatusCode -eq 200) {
+                    $Available = $true
+                }
+            } catch {}
+        } 
+	} 
+	
+	Write-Output $Available
 }
 #
 # -----------------------------------------------------------------------------
@@ -426,15 +491,16 @@ Param	(
 		$item = new-object System.Windows.Forms.ListViewItem($Station.Name)
 		$item.SubItems.Add($Station.StreamType) | out-null
 		
-		<#
-		$item.SubItems.Add($Station.URL) | out-null
-		$item.SubItems.Add($Station.WebSite) | out-null
-		
-		$item.SubItems.Add($Station.Region) | out-null
-		$item.SubItems.Add($Station.Country) | out-null
-		$item.SubItems.Add($Station.State) | out-null
-		$item.SubItems.Add($Station.City) | out-null
-		#>
+		if ($script:ExtendedNetworkStreamsManager) {
+			$item.SubItems.Add($Station.URL) | out-null
+			$item.SubItems.Add("") | out-null
+			$item.SubItems.Add($Station.WebSite) | out-null
+			
+			$item.SubItems.Add($Station.Region) | out-null
+			$item.SubItems.Add($Station.Country) | out-null
+			$item.SubItems.Add($Station.State) | out-null
+			$item.SubItems.Add($Station.City) | out-null
+		}
 		$item.SubItems.Add($Station.Genre) | out-null
 		$item.SubItems.Add($Station.Bitrate) | out-null
 		$item.SubItems.Add($Station.Rate) | out-null
@@ -854,6 +920,7 @@ Param	(
 				$buttonPlay			= New-Object System.Windows.Forms.Button
 				$buttonImportXML	= New-Object System.Windows.Forms.Button
 				$buttonReload		= New-Object System.Windows.Forms.Button
+				$buttonCheckAvailable		= New-Object System.Windows.Forms.Button
 				$script:checkboxShowFavorite	= New-Object System.Windows.Forms.CheckBox
 			$PanelBottom							= New-Object System.Windows.Forms.Panel
 				$picBoxTraydown						= New-Object System.Windows.Forms.PictureBox				
@@ -905,15 +972,16 @@ Param	(
 	$script:ListViewNetworkStreams.Clear()
 	$script:ListViewNetworkStreams.Columns.Add("Name",220) | out-null
 	$script:ListViewNetworkStreams.Columns.Add("Type",80) | out-null
-	<#
-	$script:ListViewNetworkStreams.Columns.Add("URL",180) | out-null
-	$script:ListViewNetworkStreams.Columns.Add("WebSite",100) | out-null
-	
-	$script:ListViewNetworkStreams.Columns.Add("Region",60) | out-null
-	$script:ListViewNetworkStreams.Columns.Add("Country",70) | out-null
-	$script:ListViewNetworkStreams.Columns.Add("State",60) | out-null
-	$script:ListViewNetworkStreams.Columns.Add("City",60) | out-null
-	#>
+	if ($script:ExtendedNetworkStreamsManager) {
+		$script:ListViewNetworkStreams.Columns.Add("URL",180) | out-null
+		$script:ListViewNetworkStreams.Columns.Add("Check",80) | out-null
+		$script:ListViewNetworkStreams.Columns.Add("WebSite",100) | out-null
+		
+		$script:ListViewNetworkStreams.Columns.Add("Region",60) | out-null
+		$script:ListViewNetworkStreams.Columns.Add("Country",70) | out-null
+		$script:ListViewNetworkStreams.Columns.Add("State",60) | out-null
+		$script:ListViewNetworkStreams.Columns.Add("City",60) | out-null
+	}
 	$script:ListViewNetworkStreams.Columns.Add("Genre",90) | out-null
 	$script:ListViewNetworkStreams.Columns.Add("Bitrate",50) | out-null
 	$script:ListViewNetworkStreams.Columns.Add("Rate",50) | out-null
@@ -998,6 +1066,15 @@ Param	(
 		$_.UseVisualStyleBackColor = $True	
 		$_.TabStop = $false
 	}
+	$buttonCheckAvailable | % {
+		$_.BackColor = [System.Drawing.SystemColors]::Control
+		#$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
+		$_.Name = "ButtonConnect"
+		$_.Size = New-Object System.Drawing.Size($ButtonWidth, $ButtonHeight)
+		$_.Text = "Check Available"
+		$_.UseVisualStyleBackColor = $True	
+		$_.TabStop = $false
+	}
 	$script:checkboxShowFavorite | % {
 		#$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
 		$_.Size = New-Object System.Drawing.Size($ButtonWidth, $ButtonHeight)
@@ -1025,6 +1102,9 @@ Param	(
 		$_.Controls.Add($buttonPlay)
 		$_.Controls.Add($buttonImportXML)
 		$_.Controls.Add($buttonReload)
+		if ($script:ExtendedNetworkStreamsManager) {
+			$_.Controls.Add($buttonCheckAvailable)
+		}
 		$_.Controls.Add($script:checkboxShowFavorite)
 	}
 	$yPos = $borderDist
@@ -1171,15 +1251,27 @@ Param	(
 
 			if ($NewObject) {
 				Save-NetworkStreamData $script:xmlNetworkStreamDataSet $script:xmlNetworkStreamFilename ($NewObject.ID) $NewObject
-			
-				$script:ListViewNetworkStreams.SelectedItems[0].SubItems[0].Text = $NewObject.Name
-				$script:ListViewNetworkStreams.SelectedItems[0].SubItems[1].Text = $NewObject.StreamType
-				$script:ListViewNetworkStreams.SelectedItems[0].SubItems[2].Text = $NewObject.Genre
-				$script:ListViewNetworkStreams.SelectedItems[0].SubItems[3].Text = $NewObject.Bitrate
-				$script:ListViewNetworkStreams.SelectedItems[0].SubItems[4].Text = $NewObject.Rate
-				$script:ListViewNetworkStreams.SelectedItems[0].SubItems[5].Text = $NewObject.Tags				
-				$script:ListViewNetworkStreams.SelectedItems[0].SubItems[6].Text = $NewObject.Annotation
-				$script:ListViewNetworkStreams.SelectedItems[0].SubItems[7].Text = $NewObject.Favorite
+				$index = 0
+				$script:ListViewNetworkStreams.SelectedItems[0].SubItems[$index].Text = $NewObject.Name;$index++
+				$script:ListViewNetworkStreams.SelectedItems[0].SubItems[$index].Text = $NewObject.StreamType;$index++
+				if ($script:ExtendedNetworkStreamsManager) {
+
+					$script:ListViewNetworkStreams.SelectedItems[0].SubItems[$index].Text = $NewObject.URL;$index++
+					$script:ListViewNetworkStreams.SelectedItems[0].SubItems[$index].Text = "";$index++
+					
+					$script:ListViewNetworkStreams.SelectedItems[0].SubItems[$index].Text = $NewObject.WebSite;$index++
+					$script:ListViewNetworkStreams.SelectedItems[0].SubItems[$index].Text = $NewObject.Region;$index++
+					$script:ListViewNetworkStreams.SelectedItems[0].SubItems[$index].Text = $NewObject.Country;$index++
+					$script:ListViewNetworkStreams.SelectedItems[0].SubItems[$index].Text = $NewObject.State;$index++
+					$script:ListViewNetworkStreams.SelectedItems[0].SubItems[$index].Text = $NewObject.City;$index++
+
+				} 
+				$script:ListViewNetworkStreams.SelectedItems[0].SubItems[$index].Text = $NewObject.Genre;$index++
+				$script:ListViewNetworkStreams.SelectedItems[0].SubItems[$index].Text = $NewObject.Bitrate;$index++
+				$script:ListViewNetworkStreams.SelectedItems[0].SubItems[$index].Text = $NewObject.Rate;$index++
+				$script:ListViewNetworkStreams.SelectedItems[0].SubItems[$index].Text = $NewObject.Tags;$index++		
+				$script:ListViewNetworkStreams.SelectedItems[0].SubItems[$index].Text = $NewObject.Annotation;$index++
+				$script:ListViewNetworkStreams.SelectedItems[0].SubItems[$index].Text = $NewObject.Favorite;$index++
 
 			}
 		}
@@ -1240,6 +1332,25 @@ Param	(
 	$buttonReload.Add_Click({
 		Load-StationList -OnlyFavorites:$script:checkboxShowFavorite.Checked
 	})
+	# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	$buttonCheckAvailable.Add_Click({
+		
+		if ($script:ListViewNetworkStreams.SelectedItems -and (($script:ListViewNetworkStreams.SelectedItems).Count -gt 0) ) {
+			Foreach ($Item in $script:ListViewNetworkStreams.SelectedItems) {
+				$Object = $Item.Tag
+				
+				$Avail = Test-StreamURLAvailaible $Object.URL
+				
+				if ($Avail) {
+					$Item.SubItems[3].Text = "Ok";
+				} else {
+					$Item.SubItems[3].Text = "Failed";
+				}
+			}
+		}
+	})
+	# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	
 #region ComparerClass
   $comparerClassString = @"
 
