@@ -23,7 +23,7 @@ Set-StrictMode -Version Latest
 $script:DebugLevel = 0
 #region ScriptVariables
 $script:ScriptName		= "PS VLC Remote"
-$script:ScriptDate		= "28. September 2016"
+$script:ScriptDate		= "17. Oktober 2016"
 $script:ScriptAuthor	= "Axel Anderson"					
 $script:ScriptVersion	= "0.8.9"
 $script:ConfigVersion	= "1"
