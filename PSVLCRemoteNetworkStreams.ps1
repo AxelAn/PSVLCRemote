@@ -1416,9 +1416,9 @@ Param	(
 		$_.Controls.Add($buttonPlay)
 
 		if ($script:ExtendedNetworkStreamsManager) {
-			$_.Controls.Add($buttonImportRaimasoftXML)
+			#$_.Controls.Add($buttonImportRaimasoftXML)
 			$_.Controls.Add($buttonImportListenLive)
-			$_.Controls.Add($buttonImportRadioBrowser)
+			#$_.Controls.Add($buttonImportRadioBrowser)
 		}
 
 		if ($script:ExtendedNetworkStreamsManager) {
