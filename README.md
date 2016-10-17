@@ -5,7 +5,9 @@ Control the VLC Player Local or Remote (on Windows-PC, Linux-PC, Rasberry PI ...
     - FileExplorer
 	- Playlist
 	- Network Streams (include German Radio Station list)
+	- Network List Manager
+	- Dark and White Theme
 
 Written in Powershell with use of WinForms. 
 
-Version : 0.7.1  20.09.2016
+Version : 0.8.9  17.10.2016
