@@ -112,6 +112,13 @@ Add-Type –assemblyName WindowsBase -IgnoreWarnings
 									"235:100" , 
 									"239:100"
 									)
+									
+#
+# MOUSE / MOVE Tracker
+#
+$script:isDrag	= $false
+$script:StartDragPoint = $null
+$script:DragRectangle = $null
 #endregion SCRIPT VARIABLES
 
 
@@ -123,6 +130,8 @@ Function  Set-VLCRemoteWindowText  {
 Param	()
 
 	$Script:NotifyIcon.Text = "$script:ScriptName $script:ScriptVersion`nConnected to $($script:CommonVLCRemoteController.HostnameOrIp)"
+
+	$ToolTip.SetToolTip($picBoxAlive, "Verbindungsmanager`nConnected to $($script:CommonVLCRemoteController.HostnameOrIp)")
 	
 	$script:formMainDialog.Text = "$script:ScriptName : $($script:CommonVLCRemoteController.HostnameOrIp)"
 	
@@ -133,7 +142,7 @@ Param	()
 		$script:formMainPlaylist.Text = "$script:ScriptName : Playlist : $($script:CommonVLCRemoteController.HostnameOrIp)"
 	}
 	if ($script:formMainNetworkStreamsManager -ne $null) {
-		$script:formMainNetworkStreamsManager.Text = "$script:ScriptName : Network Streams Manager : !!! ---Experimental--- !!! : $($script:CommonVLCRemoteController.HostnameOrIp)"
+		$script:formMainNetworkStreamsManager.Text = "$script:ScriptName : Network Streams Manager : $($script:CommonVLCRemoteController.HostnameOrIp)"
 	}	
 }
 
@@ -186,6 +195,7 @@ Param	(
 				}
 			}
 			$TitleText = $TitleText -replace "&amp;","&"
+			$TitleText = $TitleText -replace "&#39;","'"
 			$TitleText = $TitleText -replace "amp;",""
 			
 			if ($script:UseMarqueeOnMainPlayer) {
@@ -300,6 +310,7 @@ Param	(
 	# -------------------------------------------------------------------------------------------------------------------------
 	$script:formMainDialog			= New-Object System.Windows.Forms.Form	
 		$tablePanelDialog = New-Object System.Windows.Forms.TableLayoutPanel
+			$lbWindowTracker = New-Object System.Windows.Forms.Label
 			$PanelDisplay = New-Object System.Windows.Forms.Panel
 				if ($script:UseMarqueeOnMainPlayer) {
 					$script:picBoxTitle	= New-Object System.Windows.Forms.PictureBox
@@ -344,7 +355,7 @@ Param	(
 	
 	#$formWidth   = 310
 	$formWidth   = 350
-	$formHeight  = 134
+	$formHeight  = 134 
 	$borderDist  = 5
 	$OffsetMarquee	= 8
 	
@@ -383,8 +394,18 @@ Param	(
 	} else {
 		$formHeight = ($lblTitleHeight+$Dist) + ($trackbarHeight+$dist) + (([math]::max($picboxCOntrolWidthSmall,$trackbarHeight)) +$dist) + ($picboxCOntrolWidthSmall+$dist)
 	}
-
+	$formHeight += 10
 	# -------------------------------------------------------------------------------------------------------
+	$lbWindowTracker  | % {
+		
+		$_.Font = $FontSmaller
+		$_.Location = New-Object System.Drawing.Point(0,0)
+		$_.Size = New-Object System.Drawing.Size($formWidth, 10)
+		$_.TextAlign = [System.Drawing.ContentAlignment]::MiddleCenter
+		$_.BackColor = [System.Drawing.Color]::Transparent
+		$_.TabStop = $false
+		$_.Text = ""
+	}
 	if ($script:UseMarqueeOnMainPlayer) {
 		$script:picBoxTitle | % {
 			$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
@@ -776,9 +797,10 @@ Param	(
 		$_.BackColor = [System.Drawing.Color]::Transparent
 		$_.ColumnCount = 1
 		$_.ColumnStyles.Add((New-Object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent, 100))) | Out-Null
-		$_.Controls.Add($PanelDisplay, 0, 0)	
-		$_.Controls.Add($PanelPosition, 0, 1)
-		$_.Controls.Add($PanelControl, 0, 2)			
+		$_.Controls.Add($lbWindowTracker,0,0)
+		$_.Controls.Add($PanelDisplay, 0, 1)	
+		$_.Controls.Add($PanelPosition, 0, 2)
+		$_.Controls.Add($PanelControl, 0, 3)			
 		$_.Controls.Add($PanelPlaylistControl, 0, 4)			
 		$_.Dock = [System.Windows.Forms.DockStyle]::Fill
 		$_.Location = New-Object System.Drawing.Point(0, 0)
@@ -795,6 +817,7 @@ Param	(
 	}		
 	$script:formMainDialog | % {
 		$_.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::FixedDialog
+		$_.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::None
 		#$_.BackColor = [System.Drawing.Color]::CornSilk
 		$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_Player
 		$_.ForeColor = Get-VLCRemoteThemeForeground $script:ThemeElement_Player 
@@ -829,7 +852,7 @@ Param	(
 	$ToolTip.SetToolTip($picBoxSelectFiles, "Fileexplorer öffnen/schließen.")
 	$ToolTip.SetToolTip($picBoxAlive, "Verbindungsmanager.")
 	$ToolTip.SetToolTip($picBoxPlaySettings, "Abspieleinstellungen.")
-	$ToolTip.SetToolTip($picBoxScriptSettings, "Scripteinstellungen.")
+	$ToolTip.SetToolTip($picBoxScriptSettings, "Scripteinstellungen.`n$($script:PSVLCRemoteScriptConfigurationPath)")
 	$ToolTip.SetToolTip($picBoxExit, "Script/VLC beenden.")
 	$ToolTip.SetToolTip($picBoxTraydown, "Fenster minimieren.")
 	$ToolTip.SetToolTip($picBoxNetworkStream, "Network Streams Manager.")
@@ -1113,7 +1136,14 @@ Param	(
 		if ($_.Button -eq [Windows.Forms.MouseButtons]::Left){
 		
 			if ($script:formMainNetworkStreamsManager -eq $null) {
-				Show-VLCRemoteNetworkStreamsManagerSimple
+				$script:xmlNetworkStreamDataSet = Load-NetworkStreamData $script:xmlNetworkStreamFilename $script:NetworkStreamDataSetName
+				if (!$script:xmlNetworkStreamDataSet) {
+					Manage-VLCRemoteNetworkStreamFiles
+					$script:xmlNetworkStreamDataSet = Load-NetworkStreamData $script:xmlNetworkStreamFilename $script:NetworkStreamDataSetName
+				}
+				if ($script:xmlNetworkStreamDataSet) {
+					Show-VLCRemoteNetworkStreamsManagerSimple
+				}
 			} else {
 				if ($script:formMainNetworkStreamsManager.Visible) {
 					$script:formMainNetworkStreamsManager.Visible = $false
@@ -1122,9 +1152,17 @@ Param	(
 				}
 			}		
 		} elseif ($_.Button -eq [Windows.Forms.MouseButtons]::Right) {
-			$Tag = Select-NetworkStreamFavorite
-			if ($Tag) {
-				Send-VLCRemote-Playfile  $script:CommonVLCRemoteController $Tag.Url			
+			$script:xmlNetworkStreamDataSet = Load-NetworkStreamData $script:xmlNetworkStreamFilename $script:NetworkStreamDataSetName
+			if (!$script:xmlNetworkStreamDataSet) {
+				Manage-VLCRemoteNetworkStreamFiles
+				$script:xmlNetworkStreamDataSet = Load-NetworkStreamData $script:xmlNetworkStreamFilename $script:NetworkStreamDataSetName
+			}
+			if ($script:xmlNetworkStreamDataSet) {
+			
+				$Tag = Select-NetworkStreamFavorite
+				if ($Tag) {
+					Send-VLCRemote-Playfile  $script:CommonVLCRemoteController $Tag.Url			
+				}
 			}
 		}
 	})
@@ -1143,8 +1181,6 @@ Param	(
 		Show-SettingsDialog
 	})
 	# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	
-	
 	$script:formMainDialog.Add_FormClosing({
 
 		if ($script:formMainDialog.WindowState -eq [System.Windows.Forms.FormWindowState]::Normal) {
@@ -1241,7 +1277,58 @@ Param	(
 		$script:formMainDialog.Activate()	
 	})
 	# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	$lbWindowTracker.Add_MouseEnter({
+		Param ( $c,
+				[System.EventArgs]$e)
+		([System.Windows.Forms.Label]$c).BackColor = [System.Drawing.Color]::Blue
+		
+	})
+	$lbWindowTracker.Add_MouseLeave({
+		Param ( $c,
+				[System.EventArgs]$e)
+		([System.Windows.Forms.Label]$c).BackColor = [System.Drawing.Color]::Transparent
+	})
+	$lbWindowTracker.Add_MouseMove({
+		Param ( $c,
+				[System.Windows.Forms.MouseEventArgs]$e)
+		#"------------------------------------------"| out-host
+		#"MOUSE MOVE ($($e.X)/$($e.Y))" | out-host
+		#"------------------------------------------"| out-host
+		if ($script:isDrag) {
+		
+			$EndDragPoint = ([System.Windows.Forms.Label]$c).PointToScreen((New-Object System.Drawing.Point $e.X, $e.Y))
+
+			$NewX = $script:StartDragPoint.X - $EndDragPoint.X
+			$NewY = $script:StartDragPoint.Y - $EndDragPoint.Y
+		
+			$X = $script:formMainDialog.Location.X - $NewX
+			$Y = $script:formMainDialog.Location.Y - $NewY
+			
+			$script:formMainDialog.Location = New-Object System.Drawing.Point($X,$Y)
 	
+		
+			$script:StartDragPoint = $EndDragPoint
+		}		
+	})
+	$lbWindowTracker.Add_MouseDown({
+		Param ( $c,
+				[System.Windows.Forms.MouseEventArgs]$e)
+		#"------------------------------------------"| out-host
+		#"MOUSE DOWN" | out-host
+		#$e | out-host
+		$script:StartDragPoint = ([System.Windows.Forms.Label]$c).PointToScreen((New-Object System.Drawing.Point $e.X, $e.Y))
+		#$script:StartDragPoint | out-host
+		#"------------------------------------------"| out-host
+		$script:isDrag	= $True
+	})
+	$lbWindowTracker.Add_MouseUp({
+		Param ( $c,
+				[System.EventArgs]$e)
+		#"------------------------------------------"| out-host
+		#"MOUSE UP" | out-host
+		#"------------------------------------------"| out-host
+		$script:isDrag	= $False
+	})
 	# ##### Notify MenuItem
 	# #########################################################################################################################
 	$Script:NIContextMenu		= New-Object System.Windows.Forms.ContextMenu

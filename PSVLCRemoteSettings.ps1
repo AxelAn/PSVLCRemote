@@ -1,7 +1,7 @@
 ﻿#################################################################################################
 # Name			: 	PSVLCRemoteSettings.ps1
 # Description	: 	
-# Author		: 	Axel Pokrandt (-XP)
+# Author		: 	Axel Anderson (-XP)
 # License		:	
 # Date			: 	20.11.2015 created
 #
@@ -39,6 +39,7 @@ $script:BoundsNetworkStreamManagerWindowID	= "02BCBDFF-26AB-4182-9FBA-BFF4DAFBC8
 $script:BoundsNetworkStreamFavoriteWindowID	= "02BCBDFF-26AB-4182-9FBA-BFF4DAFBC8B7-00006"
 $script:BoundsPlaySettingsWindowID			= "02BCBDFF-26AB-4182-9FBA-BFF4DAFBC8B7-00007"
 $script:BoundsSettingsDialogWindowID		= "02BCBDFF-26AB-4182-9FBA-BFF4DAFBC8B7-00008"
+$script:BoundsNetworkStreamFilesManagerWindowID= "02BCBDFF-26AB-4182-9FBA-BFF4DAFBC8B7-00009"
 
 #region OPACITY_SETTINGS
 $script:Opacity_Activated_Main				= 1.0
@@ -131,6 +132,19 @@ Param	()
 	
 	$Theme = Get-ScriptSettingsValue "Theme" -DefaultValue $script:VLVRemoteCurrentTheme
 	Set-VLCRemoteTheme $Theme
+	
+	$ENSM = Get-ScriptSettingsValue "ExtendedNetworkStreamsManager" -DefaultValue 0
+	$script:ExtendedNetworkStreamsManager = if ($ENSM -eq 1) {$True} else {$False}
+	
+	$Filename = Get-ScriptSettingsValue "LastNetworkStreamsFilename" -DefaultValue $script:xmlNetworkStreamFilename
+	
+	
+	if (Test-Path $Filename) {
+		$script:xmlNetworkStreamFilename = $Filename
+		
+		$script:PSVLCRemoteStreamConfigurationPath = (Split-Path $Filename)
+	}
+	
 }
 Function Load-Settings {
 [CmdletBinding()]
@@ -157,6 +171,7 @@ Param( )
 	#
 	# ADD HERE ALL other required settings
 	#
+	Set-ScriptSettingsValue "LastNetworkStreamsFilename" $script:xmlNetworkStreamFilename
 	
 			
 	try {
@@ -238,6 +253,7 @@ Function Validate-Config{
 #
 # ---------------------------------------------------------------------------------------------------------------------------------
 #
+
 Function Create-NewConfigurationDataSet {
 [CmdletBinding()]
 Param	(
@@ -628,6 +644,10 @@ Param	(
 #
 # ---------------------------------------------------------------------------------------------------------------------------------
 #
+
+#
+# ---------------------------------------------------------------------------------------------------------------------------------
+#
 Function Get-ScriptSettingsValue {
 [CmdletBinding()]
 Param	(
@@ -702,11 +722,13 @@ Param	(
 					
 					$lblTheme						  		= New-Object System.Windows.Forms.Label
 					$comboBoxTheme							= New-Object System.Windows.Forms.ComboBox
+					
+					$checkboxExtendedNetworkStreamsManager	= New-Object System.Windows.Forms.Checkbox
 		$PanelBottom = New-Object System.Windows.Forms.Panel
 			$buttonSet = New-Object System.Windows.Forms.Button		
 	# ---------------------------------------------------------------------------------------------------------------------
 	$formWidth = 540
-	$formHeight = 500 
+	$formHeight = 520 
 	$dist = 3
 	$labelWidth = 190
 	$labelHeight = 22
@@ -730,12 +752,12 @@ Param	(
 	$YPos = 0
 	$lblVersion  | % {
 		$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
-		$_.Size = New-Object System.Drawing.Size(($FormWidth-10),170)
+		$_.Size = New-Object System.Drawing.Size(($FormWidth-10),120)
 		$_.Margin = New-Object System.Windows.Forms.Padding (5)
 		$_.TextAlign = [System.Drawing.ContentAlignment]::MiddleLeft
 		$_.BackColor = [System.Drawing.Color]::Transparent
 		$_.ForeColor = [System.Drawing.Color]::Blue
-		$_.BorderStyle = "FixedSingle"
+		#$_.BorderStyle = "FixedSingle"
 		$_.TabStop = $false
 		$_.Text = $Script:VersionText
 		$_.Font = $consoleFont
@@ -1067,6 +1089,16 @@ Param	(
 		$comboBoxTheme.Items.AddRange($Script:ThemeList)
 		$comboBoxTheme.Text = $script:VLVRemoteCurrentTheme
 	# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	$xPos = 5
+	$yPos += ($labelHeight + $dist)
+	$checkboxExtendedNetworkStreamsManager  | % {
+		$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
+		$_.Size = New-Object System.Drawing.Size(340, $labelHeight)
+		$_.TabStop = $false
+		$_.Text = "Extended NetworkStreams Manager (Restart required)"
+		$_.Checked = if ($script:ExtendedNetworkStreamsManager) {$True} else {$False}
+	}	
+	# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	
 	$PanelInterfaceSettings | % {
 		$_.Dock = [System.Windows.Forms.DockStyle]::Fill
@@ -1099,7 +1131,9 @@ Param	(
 		$_.Controls.Add($checkboxUseMarqueeOnMainPlayer)		
 
 		$_.Controls.Add($lblTheme)		
-		$_.Controls.Add($comboboxTheme)		
+		$_.Controls.Add($comboboxTheme)	
+		
+		$_.Controls.Add($checkboxExtendedNetworkStreamsManager)
 	}
 #endregion INTERFACE Settings
 	# ---------------------------------------------------------------------------------------------------------------------	
@@ -1268,7 +1302,11 @@ Param	(
 		Set-ScriptSettingsValue "UseMarqueeOnMainPlayer" $UIntValue
 		
 		$StringValue = $comboboxTheme.Text
-		Set-ScriptSettingsValue "Theme" $StringValue		
+		Set-ScriptSettingsValue "Theme" $StringValue	
+		
+		$UIntValue = if ($checkboxExtendedNetworkStreamsManager.Checked) {1} else {0}
+		Set-ScriptSettingsValue "ExtendedNetworkStreamsManager" $UIntValue	
+		
 		
 	})
 	# ---------------------------------------------------------------------------------------------------------------------	

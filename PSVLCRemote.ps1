@@ -1,7 +1,7 @@
 ﻿#################################################################################################
 # Name			: 	PSVLCRemote.ps1
 # Description	: 	
-# Author		: 	Axel Pokrandt
+# Author		: 	Axel Anderson
 # License		:	
 # Date			: 	15.11.2015 created
 #
@@ -23,9 +23,9 @@ Set-StrictMode -Version Latest
 $script:DebugLevel = 0
 #region ScriptVariables
 $script:ScriptName		= "PS VLC Remote"
-$script:ScriptDate		= "20. September 2016"
+$script:ScriptDate		= "28. September 2016"
 $script:ScriptAuthor	= "Axel Anderson"					
-$script:ScriptVersion	= "0.7.1"
+$script:ScriptVersion	= "0.8.9"
 $script:ConfigVersion	= "1"
 
 $Script:VersionHistory = @"
@@ -72,11 +72,12 @@ $Script:VersionHistory = @"
             0.6.0  27.02.2016 Marquee implemented, comes without settings to switch between Label and Marquee
             0.6.1   7.05.2016 Marquee Configuration implemented
             0.7.0  19.09.2016 Theme implemented (Standard and Dark)
-			
+			0.8.0  21.09.2016 Import NetworkStreams online from http://www.listenlive.eu or offline from  http://www.radio-browser.info/gui/#/ - MariaDB SQL Dumps 
+			0.8.0 - 0.8.8	  Code Cleaning, Some Bugs, NetStreamFile-Manager, TrackerLabel instead of TitleBar in MainPlayer 
+			0.8.9  16.10.2016 Import from  listenlive.eu
 "@
 <#
         ToDo:
-            : OPEN   : Set Track Position Dialog (PSVLCRemoteGui.ps1)
             : OPEN   : Mini-Player
             : OPEN   : Save/Restore Playlist .... 
 #>
@@ -92,16 +93,7 @@ $script:WorkingDirectory = Split-Path $script:WorkingFileName -Parent
 # 
 Set-Location $script:WorkingDirectory
 
-if (($ScriptConfigPath -ne ".") -and (Test-Path $ScriptConfigPath)) {
-	$script:PSVLCRemoteScriptConfigurationPath = (Resolve-Path $ScriptConfigPath).Path
-} else {
-	$script:PSVLCRemoteScriptConfigurationPath = $script:WorkingDirectory
-} 
-if (($StreamConfigPath -ne ".") -and (Test-Path $StreamConfigPath)) {
-	$script:PSVLCRemoteStreamConfigurationPath = (Resolve-Path $StreamConfigPath).Path
-} else {
-	$script:PSVLCRemoteStreamConfigurationPath = $script:WorkingDirectory
-} 
+
 
 $Script:VersionText = @"
 
@@ -110,10 +102,6 @@ Powershell VLC Remote Control
 Author          : $($script:ScriptAuthor)
 Version         : $($script:ScriptVersion)
 ReleaseDate     : $($script:ScriptDate)
-Configuration   : $($script:ConfigVersion)
-WorkingPath     : $($script:WorkingDirectory)
-ConfigPath      : $($script:PSVLCRemoteScriptConfigurationPath)
-NetStreamPath   : $($script:PSVLCRemoteStreamConfigurationPath)
 
 License         : CC BY-NC 4.0 (Namensnennung-Nicht kommerziell 4.0)
 http://creativecommons.org/licenses/by-nc/4.0/deed.de
@@ -177,11 +165,27 @@ Param	(
 #
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
+Function Show-ComingSoon {
+[CmdletBinding()]
+Param	(
+		)
+	$d = Show-MessageBox "$script:ScriptName" "Coming soon..." "Ok" "Information"
+}
+#
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
 #region MAIN
 # #############################################################################
 # ##### MAIN
 # #############################################################################
 
+#
+# PRE-Defined
+#
+$script:PSVLCRemoteScriptConfigurationPath = $script:WorkingDirectory
+$script:PSVLCRemoteStreamConfigurationPath = $script:WorkingDirectory
+
+###############################################################################
 
 . (Join-Path $script:WorkingDirectory PSVLCRemoteLib.ps1)
 . (Join-Path $script:WorkingDirectory PSVLCRemoteRessource.ps1)
@@ -192,6 +196,17 @@ Param	(
 . (Join-Path $script:WorkingDirectory PSVLCRemoteGUIFileExplorer.ps1)
 . (Join-Path $script:WorkingDirectory PSVLCRemoteNetworkStreams.ps1)
 . (Join-Path $script:WorkingDirectory PSVLCTheme.ps1)
+. (Join-Path $script:WorkingDirectory PSVLCRemoteNetworkStreamsImport.ps1)
+. (Join-Path $script:WorkingDirectory PSVLCRemoteNetworkStreamsManager.ps1)
+
+if (($ScriptConfigPath -ne ".") -and (Test-Path $ScriptConfigPath)) {
+	$script:PSVLCRemoteScriptConfigurationPath = (Resolve-Path $ScriptConfigPath).Path
+} 
+if (($StreamConfigPath -ne ".") -and (Test-Path $StreamConfigPath)) {
+	$script:PSVLCRemoteStreamConfigurationPath = (Resolve-Path $StreamConfigPath).Path
+} 
+
+$script:xmlNetworkStreamFilename = Join-Path $script:PSVLCRemoteStreamConfigurationPath $script:xmlNetworkStreamDefaultFilename
 
 if (Test-Path (Join-Path $script:WorkingDirectory PSVLCRemoteMarquee.ps1)) {
 . (Join-Path $script:WorkingDirectory PSVLCRemoteMarquee.ps1)
@@ -209,6 +224,8 @@ $script:VLCRemoteConnectionData = $null
 Add-Type -AssemblyName PresentationFramework
 
 Load-Settings
+
+
 
 if ($script:xmlconfig.Tables["Settings"]) {
 	$SettingsObject = $script:xmlconfig.Tables["Settings"]

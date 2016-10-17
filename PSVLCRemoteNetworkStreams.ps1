@@ -1,7 +1,7 @@
 ﻿#################################################################################################
 # Name			: 	PSVLCRemoteNetworkStreams.ps1
 # Description	: 	
-# Author		: 	Axel Pokrandt (-XP)
+# Author		: 	Axel Anderson (-XP)
 # License		:	
 # Date			: 	05.12.2015 created
 #
@@ -22,21 +22,48 @@ Set-StrictMode -Version Latest
 # ---------------------------------------------------------------------------------------------------------------------------------
 #
 #region ScriptVariable
-$script:xmlNetworkStreamFilename = Join-Path $script:PSVLCRemoteStreamConfigurationPath "PSVLCRemote.NetworkStream.xml"
+$script:xmlNetworkStreamFilenameExtension = ".NetworkStream.xml"
+$script:xmlNetworkStreamDefaultFilename = "PSVLCRemote"+$script:xmlNetworkStreamFilenameExtension
+
 $script:NetworkStreamDataSetName = "StreamingStations"
+$script:NetworkStreamDataVersion = "1"
 
 $script:xmlNetworkStreamDataSet = $null
 
-$script:formMainNetworkStreamsManager = $null
+$script:NetworkStreamDataSetNameAndComment = ""
 
+$script:formMainNetworkStreamsManager = $null
 $script:TreeViewNetworkStreamsManager = $null
 $script:ListViewNetworkStreams = $null
 $script:checkboxShowFavorite = $null
 
+$script:labelFilename = $null
+$script:labelNameAndComment = $null
+
+$script:comboboxStreamType	 	 = $null
+$script:comboboxStreamCountry	 = $null
+$script:comboboxStreamGenre		 = $null
+$script:textboxSearch	         = $null
+
+
 $script:SelectNetworkStreamFavoriteTag = $null
 
-$script:ExtendedNetworkStreamsManager = $True
+$script:ExtendedNetworkStreamsManager = $False
 
+$script:Filter_All_Type		= "<All Type>"
+$script:Filter_No_Type		= "<No  Type>"
+$script:FilterList_Type		= @($script:Filter_All_Type,$script:Filter_No_Type)
+
+$script:Filter_All_Genre	= "<All Genre>"
+$script:Filter_No_Genre		= "<No  Genre>"
+$script:FilterList_Genre	= @($script:Filter_All_Genre,$script:Filter_No_Genre)
+
+$script:Filter_All_Country	= "<All Country>"
+$script:Filter_No_Country	= "<No  Country>"
+$script:FilterList_Country	= @($script:Filter_All_Country,$script:Filter_No_Country)
+
+
+<#
 $contextMenuNetworkStreamsManager = New-Object System.Windows.Forms.ContextMenu
 	$menuItemNSM_New			= $contextMenuNetworkStreamsManager.MenuItems.Add("New")
 	$menuItemNSM_Edit			= $contextMenuNetworkStreamsManager.MenuItems.Add("Edit")	
@@ -45,6 +72,7 @@ $contextMenuNetworkStreamsManager = New-Object System.Windows.Forms.ContextMenu
 	$menuItemNSM_Play			= $contextMenuNetworkStreamsManager.MenuItems.Add("Play")	
 	$menuItemNSM_Reload			= $contextMenuNetworkStreamsManager.MenuItems.Add("Reload")	
 	$menuItemNSM_FavoritesOnly	= $contextMenuNetworkStreamsManager.MenuItems.Add("Favorites only")	
+#>
 	
 #endregion ScriptVariable
 #
@@ -127,6 +155,45 @@ Param	(
 #
 # -----------------------------------------------------------------------------
 #
+Function Test-NetworkStreamDataSetConfigTable {
+[CmdletBinding()]
+Param( 
+		[Parameter(Mandatory=$true)][System.Data.DataSet]$xmlNetworkStreamDataSet,
+		[string]$Name = "Default",
+		[string]$Comment = "Default Networkstream Data File"
+	)
+
+	#
+	# TODO
+	#
+	$bExist = $True
+	
+	if (!$xmlNetworkStreamDataSet.Tables -or ($xmlNetworkStreamDataSet.Tables -and !$xmlNetworkStreamDataSet.Tables['Configuration'])) {
+
+		$bExist = $False
+		$htTableStructure_Config = @{
+			DataSet=$xmlNetworkStreamDataSet
+			TableName="Configuration"
+			Columns=@("Name", "Comment", "Version")
+		}
+		Add-Table @htTableStructure_Config
+
+		$htDataConfig = @{
+			DataSet=$xmlNetworkStreamDataSet
+			TableName="Configuration"
+			RowData = @{
+				Name		= $Name
+				Comment		= $Comment
+				Version		= $script:NetworkStreamDataVersion
+			}
+		}
+		Add-Row @htDataConfig		
+	}
+	
+}
+#
+# -----------------------------------------------------------------------------
+#	
 Function Load-NetworkStreamData {
 	Param	( 
 				[Parameter(Mandatory=$true)][string]$XMLNetworkStreamFilename,
@@ -149,29 +216,42 @@ Function Load-NetworkStreamData {
 		}
 	} 
 	if (!$xmlNetworkStreamDataSet) {
+		<#
 		$xmlNetworkStreamDataSet = New-NetworkStreamDataSet -NetworkStreamDataSetName $NetworkStreamDataSetName
 		
 		$bRetVal = Save-NetworkStreamDataSet -XmlNetworkStreamDataSet $xmlNetworkStreamDataSet -XmlNetworkStreamFilename $XMLNetworkStreamFilename
+		#>
+	} else {
+	
+		if (!(Test-NetworkStreamDataSetConfigTable $xmlNetworkStreamDataSet)) {
+			$bRetVal = Save-NetworkStreamDataSet -XmlNetworkStreamDataSet $xmlNetworkStreamDataSet -XmlNetworkStreamFilename $XMLNetworkStreamFilename	
+		}
+		if ($xmlNetworkStreamDataSet.Tables["Configuration"]) {
+			$Config = $xmlNetworkStreamDataSet.Tables["Configuration"].Select() | Select-Object -First 1 
+		} else {
+			$Config = $null
+		}	
 
+		if ($Config) {
+			$Name    = $Config.Name
+			$Comment = $Config.Comment
+			
+			$script:NetworkStreamDataSetNameAndComment = "$($Name) - $($Comment)"
+		}
 	}
+	
 	Write-Output $xmlNetworkStreamDataSet 	
 }
 #
 # ---------------------------------------------------------------------------------------------------------------------------------
 #
-Function New-NetworkStreamDataSet {
+Function Add-TableStreamingStations {
 [CmdletBinding()]
 Param	(
-			[Parameter(Mandatory=$true)][string]$NetworkStreamDataSetName
+			[Parameter(Mandatory=$true)][System.Data.DataSet]$DataSet
 		)
-    #Create a brand new dataset.
-    $NetworkStreamDataSet = New-Object System.Data.DataSet($NetworkStreamDataSetName)
-	# -------------------------------------------------------------------------------------------------------------------------
-	
-	# -------------------------------------------------------------------------------------------------------------------------
-	
     $htTableStructure_NetworkStream = @{
-        DataSet=$NetworkStreamDataSet
+        DataSet=$DataSet
         TableName="StreamingStations"
         Columns=@(	"ID",
 					"StreamType",
@@ -191,7 +271,37 @@ Param	(
     }
 	
     Add-Table @htTableStructure_NetworkStream
-    
+}
+#
+# ---------------------------------------------------------------------------------------------------------------------------------
+#
+Function New-NetworkStreamDataSet {
+[CmdletBinding()]
+Param	(
+			[Parameter(Mandatory=$true)][string]$NetworkStreamDataSetName
+		)
+    #Create a brand new dataset.
+    $NetworkStreamDataSet = New-Object System.Data.DataSet($NetworkStreamDataSetName)
+	# -------------------------------------------------------------------------------------------------------------------------
+	Add-TableStreamingStations $NetworkStreamDataSet
+	# -------------------------------------------------------------------------------------------------------------------------
+	$htTableStructure_Config = @{
+		DataSet=$NetworkStreamDataSet
+		TableName="Configuration"
+		Columns=@("Name", "Comment", "Version")
+	}
+	Add-Table @htTableStructure_Config
+
+	$htDataConfig = @{
+		DataSet=$NetworkStreamDataSet
+		TableName="Configuration"
+		RowData = @{
+			Name		= "Default"
+			Comment		= "Default Networkstream Data File"
+			Version		= $script:NetworkStreamDataVersion
+		}
+	}
+	Add-Row @htDataConfig   
 	# -------------------------------------------------------------------------------------------------------------------------
 	$NewConnectionGUID = ([string][guid]::NewGuid()).ToUpper()
 	$htNetworkStreamData = @{
@@ -240,7 +350,7 @@ Param	(
         }
     }
 	Add-Row @htNetworkStreamData
-	
+	<#
 	$NewConnectionGUID = ([string][guid]::NewGuid()).ToUpper()
  	$htNetworkStreamData = @{
         DataSet=$NetworkStreamDataSet
@@ -312,7 +422,7 @@ Param	(
         }
     }
 	Add-Row @htNetworkStreamData
- 
+	#>
  
 	Write-Output $NetworkStreamDataSet
 }
@@ -345,9 +455,15 @@ Param	(
 			[Parameter(Mandatory=$true)][string]$ID,
 			[Parameter(Mandatory=$true)][PSObject]$Data
 		)
-
-	$NetworkStream = $xmlNetworkStreamDataSet.Tables["StreamingStations"].Select(("ID = '"+$ID+"'"))
-	
+	if ($Data.Name -eq "") {
+		$Data.Name = "<Unknown Station>"
+	}
+		
+	if ($script:xmlNetworkStreamDataSet.Tables["StreamingStations"]) {
+		$NetworkStream = $xmlNetworkStreamDataSet.Tables["StreamingStations"].Select(("ID = '"+$ID+"'"))
+	} else {
+		$NetworkStream = $null
+	}
 	if ($NetworkStream) {
 		
 		$NetworkStream[0].StreamType = $Data.StreamType
@@ -367,6 +483,11 @@ Param	(
 		
 		$NetworkStream.AcceptChanges()
 	} else {
+	
+		if (!$script:xmlNetworkStreamDataSet.Tables["StreamingStations"]) {
+			Add-TableStreamingStations $xmlNetworkStreamDataSet
+		}
+		
 		$NewConnectionGUID = ([string][guid]::NewGuid()).ToUpper()
 		
 		$htNetworkStreamData = @{
@@ -478,12 +599,73 @@ Param	(
 			[switch]$OnlyFavorites=$false
 		)
 
-	if ($OnlyFavorites) {
-		$StreamingStations = $script:xmlNetworkStreamDataSet.Tables["StreamingStations"].Select("Favorite = '1'")
-	} else {
-		$StreamingStations = $script:xmlNetworkStreamDataSet.Tables["StreamingStations"].Select()
+	$StreamingStations = $null
 	
+	if ($script:xmlNetworkStreamDataSet) {
+		if ($script:xmlNetworkStreamDataSet.Tables["StreamingStations"]) {
+			$FilterString = ""
+			if ($OnlyFavorites) {
+				$FilterString += "Favorite = '1'"
+			}
+			$Text = $script:comboboxStreamType.Text
+			if ($Text -ne $script:Filter_All_Type) {
+				if ($FilterString -ne "") {$FilterString += " and "}
+				
+				if ($Text -eq $script:Filter_No_Type) {
+					$FilterString += "StreamType = ''"
+				} else {
+					$FilterString += ("StreamType = '"+$Text+"'")
+				}
+			}
+			$Text = $script:comboboxStreamCountry.Text
+			if ($Text -ne $script:Filter_All_Country) {
+				if ($FilterString -ne "") {$FilterString += " and "}
+				
+				if ($Text -eq $script:Filter_No_Country) {
+					$FilterString += "Country = ''"
+				} else {
+					$FilterString += ("Country = '"+$Text+"'")
+				}
+			}
+			$Text = $script:comboboxStreamGenre.Text
+			if ($Text -ne $script:Filter_All_Genre) {
+				if ($FilterString -ne "") {$FilterString += " and "}
+				
+				if ($Text -eq $script:Filter_No_Genre) {
+					$FilterString += "Genre = ''"
+				} else {
+					$FilterString += ("Genre = '"+$Text+"'")
+				}
+			}
+			$Text = $script:textboxSearch.Text
+			if ($Text -ne "") {
+				$Text = $Text -replace "[*%?]",""
+				
+				if ($FilterString -ne "") {$FilterString += " and "}
+				# Name, URL, WebSite, Region,Country,State,,Genre,Tags,Annotation
+				$FilterString += ("(")
+				$FilterString += ("(Name like '*"+$Text+"*')")
+				$FilterString += (" or (URL like '*"+$Text+"*')")
+				$FilterString += (" or (WebSite like '*"+$Text+"*')")
+				$FilterString += (" or (Region like '*"+$Text+"*')")
+				$FilterString += (" or (Country like '*"+$Text+"*')")
+				$FilterString += (" or (State like '*"+$Text+"*')")
+				$FilterString += (" or (City like '*"+$Text+"*')")
+				$FilterString += (" or (Genre like '*"+$Text+"*')")
+				$FilterString += (" or (Tags like '*"+$Text+"*')")
+				$FilterString += (" or (Annotation like '*"+$Text+"*')")
+				$FilterString += (")")
+
+			}				
+			#$FilterString | out-Host
+			$StreamingStations = $script:xmlNetworkStreamDataSet.Tables["StreamingStations"].Select($FilterString) | Sort-Object StreamType, Name, Bitrate
+		} else {
+			#"Table StreamingStations NOT EXIST" | out-Host
+		}
+	} else {
+			#"DATASET NOT EXIST" | out-Host
 	}
+	
 	$script:ListViewNetworkStreams.BeginUpdate()
 	$script:ListViewNetworkStreams.Items.Clear()
 	
@@ -494,20 +676,26 @@ Param	(
 		if ($script:ExtendedNetworkStreamsManager) {
 			$item.SubItems.Add($Station.URL) | out-null
 			$item.SubItems.Add("") | out-null
-			$item.SubItems.Add($Station.WebSite) | out-null
-			
-			$item.SubItems.Add($Station.Region) | out-null
-			$item.SubItems.Add($Station.Country) | out-null
-			$item.SubItems.Add($Station.State) | out-null
-			$item.SubItems.Add($Station.City) | out-null
 		}
+		$item.SubItems.Add($Station.WebSite) | out-null
+		
+		$item.SubItems.Add($Station.Region) | out-null
+		$item.SubItems.Add($Station.Country) | out-null
+		$item.SubItems.Add($Station.State) | out-null
+		$item.SubItems.Add($Station.City) | out-null
+		
 		$item.SubItems.Add($Station.Genre) | out-null
 		$item.SubItems.Add($Station.Bitrate) | out-null
-		$item.SubItems.Add($Station.Rate) | out-null
-		$item.SubItems.Add($Station.Tags) | out-null
-		$item.SubItems.Add($Station.Annotation) | out-null
-		$item.SubItems.Add($Station.Favorite) | out-null
-	
+		if ($script:ExtendedNetworkStreamsManager) {
+			$item.SubItems.Add($Station.Rate) | out-null
+			$item.SubItems.Add($Station.Tags) | out-null
+			$item.SubItems.Add($Station.Annotation) | out-null
+		}
+		if ($Station.Favorite -eq "1") {
+			$item.SubItems.Add("Favorite") | out-null
+		} else {
+			$item.SubItems.Add("") | out-null
+		}
 		$item.tag = $Station
 		$script:ListViewNetworkStreams.Items.Add($item)	| out-null
 
@@ -518,12 +706,39 @@ Param	(
 #
 # ---------------------------------------------------------------------------------------------------------------------------------
 #
+Function Load-SearchSettings {
+	[CmdletBinding()]
+	Param	()
+
+	if ($script:xmlNetworkStreamDataSet.Tables["StreamingStations"]) {
+		$GenreNames = $script:xmlNetworkStreamDataSet.Tables["StreamingStations"].Select("Genre <> ''") | Select-Object Genre -Unique | Sort-Object Genre | Select-Object -Expand Genre
+		$script:comboboxStreamGenre.Items.Clear()
+		$script:comboboxStreamGenre.Items.AddRange($script:FilterList_Genre+$GenreNames)			
+		$script:comboboxStreamGenre.SelectedItem = $script:Filter_All_Genre
+	}
+	if ($script:xmlNetworkStreamDataSet.Tables["StreamingStations"]) {
+		$StreamTypeNames = $script:xmlNetworkStreamDataSet.Tables["StreamingStations"].Select("StreamType <> ''") | Select-Object StreamType -Unique | Sort-Object StreamType | Select-Object -Expand StreamType
+		$script:comboboxStreamType.Items.Clear()
+		$script:comboboxStreamType.Items.AddRange($script:FilterList_Type+$StreamTypeNames)			
+		$script:comboboxStreamType.SelectedItem = $script:Filter_All_Type
+	}		
+	if ($script:xmlNetworkStreamDataSet.Tables["StreamingStations"]) {
+		$CountryNames = $script:xmlNetworkStreamDataSet.Tables["StreamingStations"].Select("Country <> ''") | Select-Object Country -Unique | Sort-Object Country | Select-Object -Expand Country
+		$script:comboboxStreamCountry.Items.Clear()
+		$script:comboboxStreamCountry.Items.AddRange($script:FilterList_Country+$CountryNames)			
+		$script:comboboxStreamCountry.SelectedItem = $script:Filter_All_Country
+	}		
+	$script:textboxSearch.Text = ""	
+}
+#
+# ---------------------------------------------------------------------------------------------------------------------------------
+#	
 Function Edit-VLCRemoteVLCRemoteNetworkStreams {
 [CmdletBinding()]
 Param	(
 		[Parameter(Mandatory=$true)][PSObject]$VLCRemoteNetworkStreamData
 		)
-	$NetworkStreamData = New-Object PSObject -Property @{
+	$script:EditNetworkStreamData = New-Object PSObject -Property @{
 		ID				= $VLCRemoteNetworkStreamData.ID
 		StreamType		= $VLCRemoteNetworkStreamData.StreamType
 		Name			= $VLCRemoteNetworkStreamData.Name
@@ -595,15 +810,15 @@ Param	(
 	$lblAnnotation.Text	= "Annotation"
 	$lblFavorite.Text   = "Favorite"
 	
-	$textboxName.Text		= $NetworkStreamData.Name
-	$textboxURL.Text  		= $NetworkStreamData.URL
-	$textboxWebSite.Text	= $NetworkStreamData.WebSite
+	$textboxName.Text		= $script:EditNetworkStreamData.Name
+	$textboxURL.Text  		= $script:EditNetworkStreamData.URL
+	$textboxWebSite.Text	= $script:EditNetworkStreamData.WebSite
 	
-	$textboxBitrate.Text 		= $NetworkStreamData.Bitrate
-	$textboxTags.Text			= $NetworkStreamData.Tags
-	$textboxAnnotation.Text		= $NetworkStreamData.Annotation
+	$textboxBitrate.Text 		= $script:EditNetworkStreamData.Bitrate
+	$textboxTags.Text			= $script:EditNetworkStreamData.Tags
+	$textboxAnnotation.Text		= $script:EditNetworkStreamData.Annotation
 	
-	$checkboxFavorite.Checked = If ($NetworkStreamData.Favorite -eq "1") {$True} else {$False}
+	$checkboxFavorite.Checked = If ($script:EditNetworkStreamData.Favorite -eq "1") {$True} else {$False}
 	
 	$xPos = 5
 	$yPos = 5
@@ -851,26 +1066,26 @@ Param	(
 	
 	$buttonOk.Add_Click({
 
-		$NetworkStreamData.Name 		= $textboxName.Text
-		$NetworkStreamData.StreamType 	= $comboboxStreamType.Text
-		$NetworkStreamData.Url 			= $textboxUrl.Text
-		$NetworkStreamData.WebSite 		= $textboxWebSite.Text
+		$script:EditNetworkStreamData.Name 		= $textboxName.Text
+		$script:EditNetworkStreamData.StreamType 	= $comboboxStreamType.Text
+		$script:EditNetworkStreamData.Url 			= $textboxUrl.Text
+		$script:EditNetworkStreamData.WebSite 		= $textboxWebSite.Text
 		
-		$NetworkStreamData.Bitrate 		= $textboxBitrate.Text
-		$NetworkStreamData.Tags 		= $textboxTags.Text
-		$NetworkStreamData.Annotation 	= $textboxAnnotation.Text
+		$script:EditNetworkStreamData.Bitrate 		= $textboxBitrate.Text
+		$script:EditNetworkStreamData.Tags 		= $textboxTags.Text
+		$script:EditNetworkStreamData.Annotation 	= $textboxAnnotation.Text
 		
-		$NetworkStreamData.Genre 		= $comboboxGenre.Text
+		$script:EditNetworkStreamData.Genre 		= $comboboxGenre.Text
 		
-		$NetworkStreamData.Rate 		= $comboboxRate.Text
-		$NetworkStreamData.Favorite = If ($checkboxFavorite.Checked) {"1"} else {"0"}	
+		$script:EditNetworkStreamData.Rate 		= $comboboxRate.Text
+		$script:EditNetworkStreamData.Favorite = If ($checkboxFavorite.Checked) {"1"} else {"0"}	
 		
 		$formDialog.Close()
 		
 	})
 	$buttonCancel.Add_Click({
 		
-		$NetworkStreamData = $null
+		$script:EditNetworkStreamData = $null
 		$formDialog.Close()
 		
 	})	
@@ -882,21 +1097,23 @@ Param	(
 	
 	$Rates = @("0","1","2","3","4","5","6","7","8","9")
 	$comboboxRate.Items.AddRange($Rates)			
-	$comboboxRate.SelectedItem = ($NetworkStreamData.Rate)
+	$comboboxRate.SelectedItem = ($script:EditNetworkStreamData.Rate)
 
-	$GenreNames = $script:xmlNetworkStreamDataSet.Tables["StreamingStations"].Select("Genre <> ''") | Select-Object Genre -Unique | Sort-Object Genre | Select-Object -Expand Genre
-	#$GenreNames | out-host
-	$comboboxGenre.Items.AddRange($GenreNames)			
-	$comboboxGenre.SelectedItem = ($NetworkStreamData.Genre)
-
-	$StreamTypeNames = $script:xmlNetworkStreamDataSet.Tables["StreamingStations"].Select("StreamType <> ''") | Select-Object StreamType -Unique | Sort-Object StreamType | Select-Object -Expand StreamType
-	#$GenreNames | out-host
-	$comboboxStreamType.Items.AddRange($StreamTypeNames)			
-	$comboboxStreamType.SelectedItem = ($NetworkStreamData.StreamType)
-	
+	if ($script:xmlNetworkStreamDataSet.Tables["StreamingStations"]) {
+		$GenreNames = $script:xmlNetworkStreamDataSet.Tables["StreamingStations"].Select("Genre <> ''") | Select-Object Genre -Unique | Sort-Object Genre | Select-Object -Expand Genre
+		#$GenreNames | out-host
+		$comboboxGenre.Items.AddRange($GenreNames)			
+		$comboboxGenre.SelectedItem = ($script:EditNetworkStreamData.Genre)
+	}
+	if ($script:xmlNetworkStreamDataSet.Tables["StreamingStations"]) {
+		$StreamTypeNames = $script:xmlNetworkStreamDataSet.Tables["StreamingStations"].Select("StreamType <> ''") | Select-Object StreamType -Unique | Sort-Object StreamType | Select-Object -Expand StreamType
+		#$GenreNames | out-host
+		$comboboxStreamType.Items.AddRange($StreamTypeNames)			
+		$comboboxStreamType.SelectedItem = ($script:EditNetworkStreamData.StreamType)
+	}
 	$formDialog.ShowDialog() | out-null	
 	
-	Write-Output $NetworkStreamData
+	Write-Output $script:EditNetworkStreamData
 }
 #
 # ---------------------------------------------------------------------------------------------------------------------------------
@@ -907,29 +1124,51 @@ Param	(
 		)
 		
 
+
 	# ---------------------------------------------------------------------------------------------------------------------
 	$script:formMainNetworkStreamsManager		= New-Object System.Windows.Forms.Form
 		$PanelMain = New-Object System.Windows.Forms.Panel
 			$PanelLeft		= New-Object System.Windows.Forms.Panel
 				$script:ListViewNetworkStreams	= New-Object System.Windows.Forms.ListView
-			$PanelRight		= New-Object System.Windows.Forms.FlowLayoutPanel
-				$buttonNew			= New-Object System.Windows.Forms.Button
-				$buttonEdit			= New-Object System.Windows.Forms.Button
-				$buttonDelete		= New-Object System.Windows.Forms.Button
-				$buttonSetAsFavourite	= New-Object System.Windows.Forms.Button
-				$buttonPlay			= New-Object System.Windows.Forms.Button
-				$buttonImportXML	= New-Object System.Windows.Forms.Button
-				$buttonReload		= New-Object System.Windows.Forms.Button
-				$buttonCheckAvailable		= New-Object System.Windows.Forms.Button
-				$script:checkboxShowFavorite	= New-Object System.Windows.Forms.CheckBox
+			$PanelMainRight		= New-Object System.Windows.Forms.Panel
+				$PanelRight		= New-Object System.Windows.Forms.FlowLayoutPanel
+					$buttonNew			= New-Object System.Windows.Forms.Button
+					$buttonEdit			= New-Object System.Windows.Forms.Button
+					$buttonDelete		= New-Object System.Windows.Forms.Button
+					$buttonSetAsFavourite	= New-Object System.Windows.Forms.Button
+					$buttonPlay			= New-Object System.Windows.Forms.Button
+					$buttonImportRaimasoftXML	= New-Object System.Windows.Forms.Button
+					$buttonImportListenLive		= New-Object System.Windows.Forms.Button
+					$buttonImportRadioBrowser	= New-Object System.Windows.Forms.Button
+					$buttonReload		= New-Object System.Windows.Forms.Button
+					$buttonCheckAvailable		= New-Object System.Windows.Forms.Button
+
+					$labelDummy	 			= New-Object System.Windows.Forms.Label
+					$script:comboboxStreamType	 	 = New-Object System.Windows.Forms.ComboBox	
+					$script:comboboxStreamCountry	 = New-Object System.Windows.Forms.ComboBox	
+					$script:comboboxStreamGenre	 = New-Object System.Windows.Forms.ComboBox	
+					
+					$script:textboxSearch	         = New-Object System.Windows.Forms.Textbox
+					
+					$script:checkboxShowFavorite	= New-Object System.Windows.Forms.CheckBox
+					
+				$PanelRightBottom			= New-Object System.Windows.Forms.Panel
+					$buttonManager			= New-Object System.Windows.Forms.Button
 			$PanelBottom							= New-Object System.Windows.Forms.Panel
+				$script:labelFilename						= New-Object System.Windows.Forms.Label
+				$script:labelNameAndComment				= New-Object System.Windows.Forms.Label
+				
 				$picBoxTraydown						= New-Object System.Windows.Forms.PictureBox				
 
+	$FontLabel = New-Object System.Drawing.Font("Segoe UI",8, [System.Drawing.FontStyle]::Bold)			
+				
 	$borderDist  = 5
 	$dist = 3
 	
-	$ButtonWidth = 130 
+	$ButtonWidth = 160 
 	$ButtonHeight = 21
+	
+	$comboboxWidth = $buttonWidth
 	
 	$formWidth = 630 + (4*$BorderDist) + $buttonWidth
 	$formHeight = 420 
@@ -962,7 +1201,12 @@ Param	(
 		$_.FullRowSelect = $True
 		$_.GridLines = $False
 		$_.HideSelection = $False
-		$_.MultiSelect = $true		
+		
+		if ($script:ExtendedNetworkStreamsManager) {
+			$_.MultiSelect = $true
+		} else {
+			$_.MultiSelect = $false		
+		}
 		$_.UseCompatibleStateImageBehavior = $False
 		$_.View = [System.Windows.Forms.View]::Details
 		$_.TabStop = $false
@@ -970,24 +1214,27 @@ Param	(
 		$_.Sorting = [System.Windows.Forms.SortOrder]::None
 	}	
 	$script:ListViewNetworkStreams.Clear()
-	$script:ListViewNetworkStreams.Columns.Add("Name",220) | out-null
-	$script:ListViewNetworkStreams.Columns.Add("Type",80) | out-null
+	$script:ListViewNetworkStreams.Columns.Add("Name",260) | out-null
+	$script:ListViewNetworkStreams.Columns.Add("Type",100) | out-null
 	if ($script:ExtendedNetworkStreamsManager) {
-		$script:ListViewNetworkStreams.Columns.Add("URL",180) | out-null
+		$script:ListViewNetworkStreams.Columns.Add("URL",660) | out-null
 		$script:ListViewNetworkStreams.Columns.Add("Check",80) | out-null
-		$script:ListViewNetworkStreams.Columns.Add("WebSite",100) | out-null
-		
-		$script:ListViewNetworkStreams.Columns.Add("Region",60) | out-null
-		$script:ListViewNetworkStreams.Columns.Add("Country",70) | out-null
-		$script:ListViewNetworkStreams.Columns.Add("State",60) | out-null
-		$script:ListViewNetworkStreams.Columns.Add("City",60) | out-null
 	}
-	$script:ListViewNetworkStreams.Columns.Add("Genre",90) | out-null
-	$script:ListViewNetworkStreams.Columns.Add("Bitrate",50) | out-null
-	$script:ListViewNetworkStreams.Columns.Add("Rate",50) | out-null
-	$script:ListViewNetworkStreams.Columns.Add("Tags",120) | out-null
-	$script:ListViewNetworkStreams.Columns.Add("Annotation",200) | out-null
-	$script:ListViewNetworkStreams.Columns.Add("Favorite",30) | out-null
+	$script:ListViewNetworkStreams.Columns.Add("WebSite",100) | out-null
+	
+	$script:ListViewNetworkStreams.Columns.Add("Region",60) | out-null
+	$script:ListViewNetworkStreams.Columns.Add("Country",70) | out-null
+	$script:ListViewNetworkStreams.Columns.Add("State",60) | out-null
+	$script:ListViewNetworkStreams.Columns.Add("City",60) | out-null
+	
+	$script:ListViewNetworkStreams.Columns.Add("Genre",130) | out-null
+	$script:ListViewNetworkStreams.Columns.Add("Bitrate",60) | out-null
+	if ($script:ExtendedNetworkStreamsManager) {
+		$script:ListViewNetworkStreams.Columns.Add("Rate",50) | out-null
+		$script:ListViewNetworkStreams.Columns.Add("Tags",120) | out-null
+		$script:ListViewNetworkStreams.Columns.Add("Annotation",200) | out-null
+	}
+	$script:ListViewNetworkStreams.Columns.Add("Favorite",70) | out-null
 
 	$panelLeft | % {
 		$_.Autosize = $True
@@ -1005,6 +1252,8 @@ Param	(
 	$yPos = $borderDist
 	$buttonNew | % {
 		$_.BackColor = [System.Drawing.SystemColors]::Control
+		$_.ForeColor = [System.Drawing.Color]::Black
+
 		#$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
 		$_.Name = "ButtonNew"
 		$_.Size = New-Object System.Drawing.Size($ButtonWidth, $ButtonHeight)
@@ -1014,6 +1263,7 @@ Param	(
 	}
 	$buttonEdit | % {
 		$_.BackColor = [System.Drawing.SystemColors]::Control
+		$_.ForeColor = [System.Drawing.Color]::Black
 		#$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
 		$_.Name = "ButtonEdit"
 		$_.Size = New-Object System.Drawing.Size($ButtonWidth, $ButtonHeight)
@@ -1023,6 +1273,7 @@ Param	(
 	}
 	$buttonDelete | % {
 		$_.BackColor = [System.Drawing.SystemColors]::Control
+		$_.ForeColor = [System.Drawing.Color]::Black
 		#$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
 		$_.Name = "ButtonDelete"
 		$_.Size = New-Object System.Drawing.Size($ButtonWidth, $ButtonHeight)
@@ -1032,6 +1283,7 @@ Param	(
 	}
 	$buttonSetAsFavourite | % {
 		$_.BackColor = [System.Drawing.SystemColors]::Control
+		$_.ForeColor = [System.Drawing.Color]::Black
 		#$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
 		$_.Name = "ButtonSetAsDefault"
 		$_.Size = New-Object System.Drawing.Size($ButtonWidth, $ButtonHeight)
@@ -1041,6 +1293,7 @@ Param	(
 	}
 	$buttonPlay | % {
 		$_.BackColor = [System.Drawing.SystemColors]::Control
+		$_.ForeColor = [System.Drawing.Color]::Black
 		#$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
 		$_.Name = "ButtonConnect"
 		$_.Size = New-Object System.Drawing.Size($ButtonWidth, $ButtonHeight)
@@ -1048,17 +1301,40 @@ Param	(
 		$_.UseVisualStyleBackColor = $True	
 		$_.TabStop = $false
 	}
-	$buttonImportXML | % {
+	$buttonImportRaimasoftXML | % {
 		$_.BackColor = [System.Drawing.SystemColors]::Control
+		$_.ForeColor = [System.Drawing.Color]::Black
 		#$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
 		$_.Name = "ButtonConnect"
 		$_.Size = New-Object System.Drawing.Size($ButtonWidth, $ButtonHeight)
-		$_.Text = "Import XML"
+		$_.Text = "Import Raimasoft"
+		$_.UseVisualStyleBackColor = $True	
+		$_.TabStop = $false
+	}
+	$buttonImportListenLive | % {
+		$_.BackColor = [System.Drawing.SystemColors]::Control
+		$_.ForeColor = [System.Drawing.Color]::Black
+		#$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
+		$_.Name = "ButtonConnect"
+		$_.Size = New-Object System.Drawing.Size($ButtonWidth, $ButtonHeight)
+		$_.Text = "Import Listenlive.eu"
+		$_.UseVisualStyleBackColor = $True	
+		$_.TabStop = $false
+	}
+	$buttonImportRadioBrowser | % {
+	
+		$_.BackColor = [System.Drawing.SystemColors]::Control
+		$_.ForeColor = [System.Drawing.Color]::Black
+		#$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
+		$_.Name = "ButtonConnect"
+		$_.Size = New-Object System.Drawing.Size($ButtonWidth, $ButtonHeight)
+		$_.Text = "Import Radio-Browser.info"
 		$_.UseVisualStyleBackColor = $True	
 		$_.TabStop = $false
 	}
 	$buttonReload | % {
 		$_.BackColor = [System.Drawing.SystemColors]::Control
+		$_.ForeColor = [System.Drawing.Color]::Black
 		#$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
 		$_.Name = "ButtonConnect"
 		$_.Size = New-Object System.Drawing.Size($ButtonWidth, $ButtonHeight)
@@ -1067,7 +1343,9 @@ Param	(
 		$_.TabStop = $false
 	}
 	$buttonCheckAvailable | % {
+	
 		$_.BackColor = [System.Drawing.SystemColors]::Control
+		$_.ForeColor = [System.Drawing.Color]::Black
 		#$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
 		$_.Name = "ButtonConnect"
 		$_.Size = New-Object System.Drawing.Size($ButtonWidth, $ButtonHeight)
@@ -1075,6 +1353,42 @@ Param	(
 		$_.UseVisualStyleBackColor = $True	
 		$_.TabStop = $false
 	}
+	$labelDummy   | % {
+		$_.Size = New-Object System.Drawing.Size($comboboxWidth, (1.2*$LabelHeight))
+		$_.TextAlign = [System.Drawing.ContentAlignment]::BottomLeft
+		$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_NetworkStreamsManager
+		$_.ForeColor = Get-VLCRemoteThemeForeground $script:ThemeElement_NetworkStreamsManager
+		$_.TabStop = $false
+		$_.Text = "Search / Filter"
+	}
+	$script:comboboxStreamType | % {
+		$_.DropDownHeight = 400
+		$_.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
+		$_.FormattingEnabled = $True
+		$_.Size = New-Object System.Drawing.Size($comboboxWidth,$labelHeight)
+		$_.TabStop = $false
+	}
+	$script:comboboxStreamCountry | % {
+		$_.DropDownHeight = 400
+		$_.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
+		$_.FormattingEnabled = $True
+		$_.Size = New-Object System.Drawing.Size($comboboxWidth,$labelHeight)
+		$_.TabStop = $false
+	}
+	$script:comboboxStreamGenre | % {
+		$_.DropDownHeight = 400
+		$_.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
+		$_.FormattingEnabled = $True
+		$_.Size = New-Object System.Drawing.Size($comboboxWidth,$labelHeight)
+		$_.TabStop = $false
+	}	
+	$script:textboxSearch | % {
+		$_.Size = New-Object System.Drawing.Size($comboboxWidth, $labelHeight)
+		$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_NetworkStreamsManager
+		$_.ForeColor = Get-VLCRemoteThemeForeground $script:ThemeElement_NetworkStreamsManager
+		$_.TabStop = $false
+	} 
+
 	$script:checkboxShowFavorite | % {
 		#$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
 		$_.Size = New-Object System.Drawing.Size($ButtonWidth, $ButtonHeight)
@@ -1085,10 +1399,10 @@ Param	(
 
 	}
 	$PanelRight | % {
-		$_.Autosize = $True
-		$_.AutosizeMode = [System.Windows.Forms.AutoSizeMode]::GrowAndShrink	
-		$_.Anchor =([System.Windows.Forms.AnchorStyles]::Top -bor [System.Windows.Forms.AnchorStyles]::Left -bor [System.Windows.Forms.AnchorStyles]::Right)
-		$_.Dock = [System.Windows.Forms.DockStyle]::Right
+		#$_.Autosize = $True
+		#$_.AutosizeMode = [System.Windows.Forms.AutoSizeMode]::GrowAndShrink	
+		#$_.Anchor =([System.Windows.Forms.AnchorStyles]::Top -bor [System.Windows.Forms.AnchorStyles]::Left -bor [System.Windows.Forms.AnchorStyles]::Right)
+		$_.Dock = [System.Windows.Forms.DockStyle]::Fill
 		$_.BackColor = [System.Drawing.Color]::Transparent
 		$_.Margin = New-Object System.Windows.Forms.Padding (0)
 		$_.Padding = New-Object System.Windows.Forms.Padding (0,0,0,0)
@@ -1100,12 +1414,24 @@ Param	(
 		$_.Controls.Add($buttonDelete)
 		$_.Controls.Add($buttonSetAsFavourite)
 		$_.Controls.Add($buttonPlay)
-		$_.Controls.Add($buttonImportXML)
-		$_.Controls.Add($buttonReload)
+
+		if ($script:ExtendedNetworkStreamsManager) {
+			$_.Controls.Add($buttonImportRaimasoftXML)
+			$_.Controls.Add($buttonImportListenLive)
+			$_.Controls.Add($buttonImportRadioBrowser)
+		}
+
 		if ($script:ExtendedNetworkStreamsManager) {
 			$_.Controls.Add($buttonCheckAvailable)
 		}
+		$_.Controls.Add($labelDummy)
+		$_.Controls.Add($script:comboboxStreamType)
+		$_.Controls.Add($script:comboboxStreamCountry)
+		$_.Controls.Add($script:comboboxStreamGenre)
+		$_.Controls.Add($script:textboxSearch)
 		$_.Controls.Add($script:checkboxShowFavorite)
+		
+		$_.Controls.Add($buttonReload)
 	}
 	$yPos = $borderDist
 	$xPos = $FormWidth - $BorderDist - $picboxCOntrolWidthSmall
@@ -1117,6 +1443,31 @@ Param	(
 		$_.Margin = New-Object System.Windows.Forms.Padding (0)	
 		$_.Image = $script:ImageTrayDown
 		$_.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::StretchImage
+	}
+	$xPos = $BorderDist
+	$yPos = $BorderDist
+	$script:labelFilename  | % {
+		$_.Anchor =([System.Windows.Forms.AnchorStyles]::Top -bor [System.Windows.Forms.AnchorStyles]::Left -bor [System.Windows.Forms.AnchorStyles]::Right)
+		$_.Font = $FontLabel
+		$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
+		$_.Size = New-Object System.Drawing.Size(($formWidth - (2*$BorderDist) - $picboxCOntrolWidthSmall), 12)
+		$_.TextAlign = [System.Drawing.ContentAlignment]::MiddleLeft
+		$_.BackColor = [System.Drawing.Color]::Transparent
+		$_.ForeColor = [System.Drawing.Color]::Black
+		$_.TabStop = $false
+		$_.Text = $script:xmlNetworkStreamFilename
+	}
+	$yPos += 12
+	$script:labelNameAndComment  | % {
+		$_.Anchor =([System.Windows.Forms.AnchorStyles]::Top -bor [System.Windows.Forms.AnchorStyles]::Left -bor [System.Windows.Forms.AnchorStyles]::Right)
+		$_.Font = $FontLabel
+		$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
+		$_.Size = New-Object System.Drawing.Size(($formWidth - (2*$BorderDist) - $picboxCOntrolWidthSmall), 12)
+		$_.TextAlign = [System.Drawing.ContentAlignment]::Middleleft
+		$_.BackColor = [System.Drawing.Color]::Transparent
+		$_.ForeColor = [System.Drawing.Color]::Black
+		$_.TabStop = $false
+		$_.Text = "Name and Comment"
 	}
 	$PanelBottom | % {
 		#$_.Autosize = $True
@@ -1132,7 +1483,51 @@ Param	(
 		$_.Padding = New-Object System.Windows.Forms.Padding (0,0,0,0)
 		$_.Name = "panelBottom"
 		$_.TabStop = $false
+		$_.Controls.Add($script:labelFilename)
+		$_.Controls.Add($script:labelNameAndComment)
 		$_.Controls.Add($picBoxTraydown)
+	}
+	$buttonManager | % {
+	
+		$_.BackColor = [System.Drawing.SystemColors]::Control
+		$_.ForeColor = [System.Drawing.Color]::Black
+		$_.Location = New-Object System.Drawing.Point($borderDist,$borderDist)
+		$_.Name = "ButtonManager"
+		$_.Size = New-Object System.Drawing.Size($ButtonWidth, $ButtonHeight)
+		$_.Text = "Manager"
+		$_.UseVisualStyleBackColor = $True	
+		$_.TabStop = $false
+	}
+	$PanelRightBottom | % {
+		$_.Anchor =([System.Windows.Forms.AnchorStyles]::Bottom -bor [System.Windows.Forms.AnchorStyles]::Left -bor [System.Windows.Forms.AnchorStyles]::Right)
+		$_.Size = New-Object System.Drawing.Size(0, ($ButtonHeight+(2*$borderDist)))
+		$_.Dock = [System.Windows.Forms.DockStyle]::Bottom
+		#$_.BackColor = [System.Drawing.Color]::Wheat
+		$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_NetworkStreamsManager
+		$_.ForeColor = Get-VLCRemoteThemeForeground $script:ThemeElement_NetworkStreamsManager
+		
+		$_.Margin = New-Object System.Windows.Forms.Padding (0)
+		$_.Padding = New-Object System.Windows.Forms.Padding (0,0,0,0)
+		$_.Name = "panelBottom"
+		$_.TabStop = $false
+		$_.Controls.Add($buttonManager)	
+	}
+	$PanelMainRight	| % {
+		#$_.Autosize = $True
+		#$_.AutosizeMode = [System.Windows.Forms.AutoSizeMode]::GrowAndShrink	
+		#$_.Anchor =([System.Windows.Forms.AnchorStyles]::Top -bor [System.Windows.Forms.AnchorStyles]::Left -bor [System.Windows.Forms.AnchorStyles]::Right -bor [System.Windows.Forms.AnchorStyles]::Bottom)
+		$_.Size = New-Object System.Drawing.Size(($ButtonWidth+(2*$borderDist)), 0)
+		$_.Dock = [System.Windows.Forms.DockStyle]::Right
+		#$_.BackColor = [System.Drawing.Color]::Wheat
+		$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_NetworkStreamsManager
+		$_.ForeColor = Get-VLCRemoteThemeForeground $script:ThemeElement_NetworkStreamsManager
+		
+		$_.Margin = New-Object System.Windows.Forms.Padding (0)
+		$_.Padding = New-Object System.Windows.Forms.Padding (0,0,0,0)
+		$_.Name = "panelBottom"
+		$_.TabStop = $false
+		$_.Controls.Add($PanelRight)	
+		$_.Controls.Add($PanelRightBottom)	
 	}
 	$panelMain | % {
 		$_.Autosize = $True
@@ -1145,7 +1540,7 @@ Param	(
 		$_.Name = "panelPosition"
 		$_.TabStop = $false
 		$_.Controls.Add($panelLeft)
-		$_.Controls.Add($panelRight)
+		$_.Controls.Add($PanelMainRight)
 		$_.Controls.Add($panelBottom)
 	}
 	$script:formMainNetworkStreamsManager | % {
@@ -1160,7 +1555,11 @@ Param	(
 		$_.MinimizeBox = $False
 		$_.ShowInTaskbar = $False
 		$_.Icon = $script:ScriptIcon
-		$_.Text = "$script:ScriptName : Network Streams Manager"
+		$Text = "$script:ScriptName : Network Streams Manager"
+		if ($script:ExtendedNetworkStreamsManager) {
+			$Text += " : EXTENDED"
+		}
+		$_.Text = $Text
 		
 		$_.Font = $Script:FontBase
 		
@@ -1238,6 +1637,7 @@ Param	(
 		if ($NewObject) {
 			Save-NetworkStreamData $script:xmlNetworkStreamDataSet $script:xmlNetworkStreamFilename $script:DummyID $NewObject
 			
+			Load-SearchSettings
 			Load-StationList -OnlyFavorites:$script:checkboxShowFavorite.Checked		
 		}
 	})
@@ -1255,24 +1655,29 @@ Param	(
 				$script:ListViewNetworkStreams.SelectedItems[0].SubItems[$index].Text = $NewObject.Name;$index++
 				$script:ListViewNetworkStreams.SelectedItems[0].SubItems[$index].Text = $NewObject.StreamType;$index++
 				if ($script:ExtendedNetworkStreamsManager) {
-
 					$script:ListViewNetworkStreams.SelectedItems[0].SubItems[$index].Text = $NewObject.URL;$index++
 					$script:ListViewNetworkStreams.SelectedItems[0].SubItems[$index].Text = "";$index++
-					
-					$script:ListViewNetworkStreams.SelectedItems[0].SubItems[$index].Text = $NewObject.WebSite;$index++
-					$script:ListViewNetworkStreams.SelectedItems[0].SubItems[$index].Text = $NewObject.Region;$index++
-					$script:ListViewNetworkStreams.SelectedItems[0].SubItems[$index].Text = $NewObject.Country;$index++
-					$script:ListViewNetworkStreams.SelectedItems[0].SubItems[$index].Text = $NewObject.State;$index++
-					$script:ListViewNetworkStreams.SelectedItems[0].SubItems[$index].Text = $NewObject.City;$index++
+				}	
+				$script:ListViewNetworkStreams.SelectedItems[0].SubItems[$index].Text = $NewObject.WebSite;$index++
+				$script:ListViewNetworkStreams.SelectedItems[0].SubItems[$index].Text = $NewObject.Region;$index++
+				$script:ListViewNetworkStreams.SelectedItems[0].SubItems[$index].Text = $NewObject.Country;$index++
+				$script:ListViewNetworkStreams.SelectedItems[0].SubItems[$index].Text = $NewObject.State;$index++
+				$script:ListViewNetworkStreams.SelectedItems[0].SubItems[$index].Text = $NewObject.City;$index++
 
-				} 
+				
 				$script:ListViewNetworkStreams.SelectedItems[0].SubItems[$index].Text = $NewObject.Genre;$index++
 				$script:ListViewNetworkStreams.SelectedItems[0].SubItems[$index].Text = $NewObject.Bitrate;$index++
-				$script:ListViewNetworkStreams.SelectedItems[0].SubItems[$index].Text = $NewObject.Rate;$index++
-				$script:ListViewNetworkStreams.SelectedItems[0].SubItems[$index].Text = $NewObject.Tags;$index++		
-				$script:ListViewNetworkStreams.SelectedItems[0].SubItems[$index].Text = $NewObject.Annotation;$index++
-				$script:ListViewNetworkStreams.SelectedItems[0].SubItems[$index].Text = $NewObject.Favorite;$index++
-
+				
+				if ($script:ExtendedNetworkStreamsManager) {
+					$script:ListViewNetworkStreams.SelectedItems[0].SubItems[$index].Text = $NewObject.Rate;$index++
+					$script:ListViewNetworkStreams.SelectedItems[0].SubItems[$index].Text = $NewObject.Tags;$index++		
+					$script:ListViewNetworkStreams.SelectedItems[0].SubItems[$index].Text = $NewObject.Annotation;$index++
+				}
+				if ($NewObject.Favorite -eq "1") {
+					$script:ListViewNetworkStreams.SelectedItems[0].SubItems[$index].Text = "Favorite";$index++
+				} else {
+					$script:ListViewNetworkStreams.SelectedItems[0].SubItems[$index].Text = "";$index++				
+				}
 			}
 		}
 	})
@@ -1282,11 +1687,21 @@ Param	(
 		
 			Foreach ($Item in $script:ListViewNetworkStreams.SelectedItems) {
 				$Object = $Item.Tag
-				$Item.Remove()
 				
-				Remove-NetworkStreamData $script:xmlNetworkStreamDataSet $script:xmlNetworkStreamFilename ($Object.ID)
+				if ($script:ExtendedNetworkStreamsManager) {
+					$Answer = "Yes"
+				} else {
+					$Answer = Show-MessageYesNoAnswer "Soll der Eintrag $($Object.Name) gelöscht werden ?"
+				}
+				if ($Answer -eq  "Yes") {			
 
+					$Item.Remove()
+					
+					Remove-NetworkStreamData $script:xmlNetworkStreamDataSet $script:xmlNetworkStreamFilename ($Object.ID)
+
+				}
 			}
+			
 		}
 	})
 	# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1302,7 +1717,17 @@ Param	(
 				}
 				Save-NetworkStreamData $script:xmlNetworkStreamDataSet $script:xmlNetworkStreamFilename ($Object.ID) $Object
 			
-				$Item.SubItems[7].Text = $Object.Favorite				
+				if ($script:ExtendedNetworkStreamsManager) {
+					$Index = 14
+				} else {
+					$index = 9
+				}
+			
+				if ($Object.Favorite -eq "1") {
+					$Item.SubItems[$index].Text = "Favorite"
+				} else {
+					$Item.SubItems[$index].Text = ""
+				}
 
 			}
 		
@@ -1318,14 +1743,26 @@ Param	(
 		}
 	})
 	# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	$buttonImportXML.Add_Click({
+	$buttonImportRaimasoftXML.Add_Click({
 	
-	
+		<#
 		$Filename = Select-FileDialog "Select File" "" $script:WorkingDirectory "XML Files (*.xml|*.xml"
 		if ($FileName) {
 			Import-RaimasoftXML $Filename
 			Load-StationList -OnlyFavorites:$script:checkboxShowFavorite.Checked
 		}
+		#>
+		
+	})
+	# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	$buttonImportListenLive.Add_Click({
+	
+		Import-ListenLiveStations
+	
+	})
+	# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	$buttonImportRadioBrowser.Add_Click({
+
 	
 	})
 	# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1349,6 +1786,31 @@ Param	(
 			}
 		}
 	})
+	# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	$buttonManager.Add_Click({
+		
+		$OldFilename = $script:xmlNetworkStreamFilename
+	
+		Manage-VLCRemoteNetworkStreamFiles
+		
+		if ($oldFilename -ne $script:xmlNetworkStreamFilename) {
+		
+			$script:xmlNetworkStreamDataSet = Load-NetworkStreamData $script:xmlNetworkStreamFilename $script:NetworkStreamDataSetName
+			
+			Load-SearchSettings
+			Load-StationList -OnlyFavorites:$script:checkboxShowFavorite.Checked	
+
+			$script:labelFilename.Text 			= $script:xmlNetworkStreamFilename
+			$script:labelNameAndComment.Text 	= $script:NetworkStreamDataSetNameAndComment
+		}
+	})
+	# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	$script:textboxSearch.Add_KeyDown({
+		if ($_.KeyData -ieq "Return") {
+			Load-StationList -OnlyFavorites:$script:checkboxShowFavorite.Checked
+		} 
+		#>
+	})	
 	# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	
 #region ComparerClass
@@ -1426,7 +1888,7 @@ Param	(
 	Add-Type -TypeDefinition $comparerClassString -ReferencedAssemblies ( 'System.Windows.Forms', 'System.Drawing')
 	#endregion ComparerClass      
 	# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
+<#
 	$script:boolSort = $true
 	$columnClick = {  
 	  $script:ListViewNetworkStreams.ListViewItemSorter = New-Object ListViewItemComparerWSUSSearchDeclineDeleteUpdates($_.Column, $script:boolSort)
@@ -1434,12 +1896,16 @@ Param	(
 	  $script:boolSort = !$script:boolSort
 	}
 	$script:ListViewNetworkStreams.Add_ColumnClick($columnClick)
+#>
 	# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	$script:checkboxShowFavorite.Checked = $false
 	
 	$script:xmlNetworkStreamDataSet = Load-NetworkStreamData $script:xmlNetworkStreamFilename $script:NetworkStreamDataSetName
 	
+	Load-SearchSettings
 	Load-StationList -OnlyFavorites:$script:checkboxShowFavorite.Checked
+	$script:labelFilename.Text 			= $script:xmlNetworkStreamFilename
+	$script:labelNameAndComment.Text 	= $script:NetworkStreamDataSetNameAndComment
 	
 	$script:formMainNetworkStreamsManager.Show() | out-null	
 	
@@ -1612,6 +2078,15 @@ Param	(
 	
 	Write-Output $script:SelectNetworkStreamFavoriteTag
 }
+#
+# ---------------------------------------------------------------------------------------------------------------------------------
+#
+#
+# ---------------------------------------------------------------------------------------------------------------------------------
+#
+#
+# ---------------------------------------------------------------------------------------------------------------------------------
+#
 #
 # ---------------------------------------------------------------------------------------------------------------------------------
 #

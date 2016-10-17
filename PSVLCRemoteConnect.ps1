@@ -1,7 +1,7 @@
 ﻿#################################################################################################
 # Name			: 	PSVLCRemoteGUIConnect.ps1
 # Description	: 	
-# Author		: 	Axel Pokrandt (-XP)
+# Author		: 	Axel Anderson
 # License		:	
 # Date			: 	16.11.2015 created
 #
