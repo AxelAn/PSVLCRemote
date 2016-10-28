@@ -309,6 +309,8 @@ Param	(
 
 	# -------------------------------------------------------------------------------------------------------------------------
 	$script:formMainDialog			= New-Object System.Windows.Forms.Form	
+		$PanelDVDControl = New-Object System.Windows.Forms.Panel
+			$picBoxDVDUP = New-Object System.Windows.Forms.PictureBox
 		$tablePanelDialog = New-Object System.Windows.Forms.TableLayoutPanel
 			$lbWindowTracker = New-Object System.Windows.Forms.Label
 			$PanelDisplay = New-Object System.Windows.Forms.Panel
@@ -334,6 +336,21 @@ Param	(
 				
 				$picBoxMute		 = New-Object System.Windows.Forms.PictureBox
 				$trackVolume	 = New-Object System.Windows.Forms.TrackBar
+			$PanelDVDControl = New-Object System.Windows.Forms.Panel
+				$picBoxDVDUP 			= New-Object System.Windows.Forms.PictureBox
+				$picBoxDVDLEFT 			= New-Object System.Windows.Forms.PictureBox
+				$picBoxDVDRIGHT 		= New-Object System.Windows.Forms.PictureBox
+				$picBoxDVDDOWN 			= New-Object System.Windows.Forms.PictureBox
+				$picBoxDVDOK			= New-Object System.Windows.Forms.PictureBox
+
+				$picBoxDVDTITLEPREV 	= New-Object System.Windows.Forms.PictureBox
+				$picBoxDVDTITLENEXT 	= New-Object System.Windows.Forms.PictureBox
+				$picBoxDVDCHAPTERPREV 	= New-Object System.Windows.Forms.PictureBox
+				$picBoxDVDCHAPTERNEXT 	= New-Object System.Windows.Forms.PictureBox
+
+				$picBoxDVDMENU		 	= New-Object System.Windows.Forms.PictureBox
+				#$buttonDVDMENU			= New-Object System.Windows.Forms.Button
+				
 			$PanelPlaylistControl = New-Object System.Windows.Forms.Panel
 				$picBoxPlaylistSelect  = New-Object System.Windows.Forms.PictureBox
 				$picBoxSelectFiles = New-Object System.Windows.Forms.PictureBox
@@ -344,6 +361,7 @@ Param	(
 				$picBoxAlive  = New-Object System.Windows.Forms.PictureBox
 				$picBoxTraydown  = New-Object System.Windows.Forms.PictureBox
 				$picBoxHTTPLink  = New-Object System.Windows.Forms.PictureBox
+				$picBoxDVD  = New-Object System.Windows.Forms.PictureBox
 				
 	#$script:formMainDialog | fl * | out-host
 	
@@ -669,7 +687,7 @@ Param	(
 		$_.Controls.Add($picBoxRandom)
 	}
 
-	$xPos = $borderDist
+	$xPos = $BorderDist
 	$yPos = $Dist
 	$picBoxPlaylistSelect | % {
 		$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
@@ -714,7 +732,17 @@ Param	(
 		$_.Image = $script:ImageHTTPLink
 		$_.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::StretchImage
 	}		
-	
+	$xPos = $xPos + ($picboxCOntrolWidthSmall +$dist)	
+	$picBoxDVD | % {
+		$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
+		$_.Size = New-Object System.Drawing.Size($picboxCOntrolWidthSmall, $picboxCOntrolWidthSmall)
+		#$_.BackColor = [System.Drawing.Color]::Transparent
+		$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_PlayerPictureButton
+
+		$_.Margin = New-Object System.Windows.Forms.Padding (2)	
+		$_.Image = $script:ImageDVD
+		$_.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::StretchImage
+	}	
 	$xPos = $formWidth - $borderDist - $picboxCOntrolWidthSmall
 	$picBoxExit | % {
 		$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
@@ -786,11 +814,161 @@ Param	(
 		$_.Controls.Add($picBoxSelectFiles)
 		$_.Controls.Add($picBoxNetworkStream)
 		$_.Controls.Add($picBoxHTTPLink)
+		$_.Controls.Add($picBoxDVD)
 		$_.Controls.Add($picBoxPlaySettings)
 		$_.Controls.Add($picBoxScriptSettings)
 		$_.Controls.Add($picBoxExit)
 		$_.Controls.Add($picBoxAlive)
 		$_.Controls.Add($picBoxTraydown)
+	}
+	$xPos = $BorderDist + $picboxCOntrolWidthSmall + $Dist
+	$yPos = 0
+	$picBoxDVDUP  | % {
+		$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
+		$_.Size = New-Object System.Drawing.Size($picboxCOntrolWidthSmall, $picboxCOntrolWidthSmall)
+		$_.BackColor = [System.Drawing.Color]::Transparent
+		#$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_PlayerPictureButton
+
+		$_.Margin = New-Object System.Windows.Forms.Padding (0)	
+		$_.Image = $script:ImageDVDUP
+		$_.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::StretchImage
+	}
+	$xPos += $picboxCOntrolWidthSmall + $Dist + $picboxCOntrolWidthSmall + (10*$Dist)
+	$picBoxDVDTITLEPREV  | % {
+		$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
+		$_.Size = New-Object System.Drawing.Size($picboxCOntrolWidthSmall, $picboxCOntrolWidthSmall)
+		$_.BackColor = [System.Drawing.Color]::Transparent
+		#$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_PlayerPictureButton
+
+		$_.Margin = New-Object System.Windows.Forms.Padding (0)	
+		$_.Image = $script:ImageDVDTITLEPREV
+		$_.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::StretchImage
+	}
+	$xPos += $picboxCOntrolWidthSmall + $Dist
+	$picBoxDVDTITLENEXT  | % {
+		$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
+		$_.Size = New-Object System.Drawing.Size($picboxCOntrolWidthSmall, $picboxCOntrolWidthSmall)
+		$_.BackColor = [System.Drawing.Color]::Transparent
+		#$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_PlayerPictureButton
+
+		$_.Margin = New-Object System.Windows.Forms.Padding (0)	
+		$_.Image = $script:ImageDVDTITLENEXT
+		$_.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::StretchImage
+	}
+	$xPos = $BorderDist
+	$yPos = $picboxCOntrolWidthSmall + $Dist
+	$picBoxDVDLEFT  | % {
+		$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
+		$_.Size = New-Object System.Drawing.Size($picboxCOntrolWidthSmall, $picboxCOntrolWidthSmall)
+		$_.BackColor = [System.Drawing.Color]::Transparent
+		#$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_PlayerPictureButton
+
+		$_.Margin = New-Object System.Windows.Forms.Padding (0)	
+		$_.Image = $script:ImageDVDLEFT
+		$_.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::StretchImage
+	}
+	$xPos += ($picboxCOntrolWidthSmall + $Dist)
+	$picBoxDVDOK  | % {
+		$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
+		$_.Size = New-Object System.Drawing.Size($picboxCOntrolWidthSmall, $picboxCOntrolWidthSmall)
+		$_.BackColor = [System.Drawing.Color]::Transparent
+		#$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_PlayerPictureButton
+
+		$_.Margin = New-Object System.Windows.Forms.Padding (0)	
+		$_.Image = $script:ImageDVDOK
+		$_.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::StretchImage
+	}
+	$xPos += ($picboxCOntrolWidthSmall + $Dist)
+	$picBoxDVDRIGHT  | % {
+		$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
+		$_.Size = New-Object System.Drawing.Size($picboxCOntrolWidthSmall, $picboxCOntrolWidthSmall)
+		$_.BackColor = [System.Drawing.Color]::Transparent
+		#$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_PlayerPictureButton
+
+		$_.Margin = New-Object System.Windows.Forms.Padding (0)	
+		$_.Image = $script:ImageDVDRIGHT
+		$_.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::StretchImage
+	}
+	$xPos += $picboxCOntrolWidthSmall + (10*$Dist)
+	$picBoxDVDCHAPTERPREV  | % {
+		$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
+		$_.Size = New-Object System.Drawing.Size($picboxCOntrolWidthSmall, $picboxCOntrolWidthSmall)
+		$_.BackColor = [System.Drawing.Color]::Transparent
+		#$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_PlayerPictureButton
+
+		$_.Margin = New-Object System.Windows.Forms.Padding (0)	
+		$_.Image = $script:ImageDVDCHAPTERPREV
+		$_.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::StretchImage
+	}
+	$xPos += ($picboxCOntrolWidthSmall + $Dist)
+	$picBoxDVDCHAPTERNEXT | % {
+		$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
+		$_.Size = New-Object System.Drawing.Size($picboxCOntrolWidthSmall, $picboxCOntrolWidthSmall)
+		$_.BackColor = [System.Drawing.Color]::Transparent
+		#$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_PlayerPictureButton
+
+		$_.Margin = New-Object System.Windows.Forms.Padding (0)	
+		$_.Image = $script:ImageDVDCHAPTERNEXT
+		$_.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::StretchImage
+	}
+	$xPos = $BorderDist + $picboxCOntrolWidthSmall + $Dist
+	$yPos += $picboxCOntrolWidthSmall + $Dist
+	$picBoxDVDDOWN  | % {
+		$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
+		$_.Size = New-Object System.Drawing.Size($picboxCOntrolWidthSmall, $picboxCOntrolWidthSmall)
+		$_.BackColor = [System.Drawing.Color]::Transparent
+		#$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_PlayerPictureButton
+
+		$_.Margin = New-Object System.Windows.Forms.Padding (0)	
+		$_.Image = $script:ImageDVDDOWN
+		$_.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::StretchImage
+	}
+	$xPos += $picboxCOntrolWidthSmall + $Dist + $picboxCOntrolWidthSmall + (10*$Dist)
+	<#
+	$buttonDVDMENU | % {
+		$_.AutoSize = $False
+		$_.BackColor = [System.Drawing.SystemColors]::Control
+		$_.ForeColor = [System.Drawing.Color]::Black
+		$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
+		$_.Name = "buttonDVDMENU"
+		$_.Size = New-Object System.Drawing.Size( ((2*$picboxCOntrolWidthSmall)+$Dist), $picboxCOntrolWidthSmall)
+		$_.Text = "Menu"
+		$_.UseVisualStyleBackColor = $True		
+		$_.TabStop = $false
+	}
+	#>
+	$picBoxDVDMenu  | % {
+		$_.Location = New-Object System.Drawing.Point($xPos, $yPos)
+		$_.Size = New-Object System.Drawing.Size( ((2*$picboxCOntrolWidthSmall)+$Dist), $picboxCOntrolWidthSmall)
+		$_.BackColor = [System.Drawing.Color]::Transparent
+		#$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_PlayerPictureButton
+
+		$_.Margin = New-Object System.Windows.Forms.Padding (0)	
+		$_.Image = $script:ImageDVDMENU
+		$_.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::StretchImage
+	}
+	$PanelDVDControl | % {
+		$_.Autosize = $True
+		$_.Anchor =([System.Windows.Forms.AnchorStyles]::Top -bor [System.Windows.Forms.AnchorStyles]::Left -bor [System.Windows.Forms.AnchorStyles]::Right)
+		$_.Dock = [System.Windows.Forms.DockStyle]::Fill
+		$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_Player
+		#$_.BackColor = [System.Drawing.Color]::Red
+		$_.ForeColor = Get-VLCRemoteThemeForeground $script:ThemeElement_Player 
+		
+		$_.Controls.Add($picBoxDVDUP)
+		$_.Controls.Add($picBoxDVDLEFT)
+		$_.Controls.Add($picBoxDVDRIGHT)
+		$_.Controls.Add($picBoxDVDDOWN)
+		$_.Controls.Add($picBoxDVDOK)
+		$_.Controls.Add($picBoxDVDTITLEPREV)
+		$_.Controls.Add($picBoxDVDTITLENEXT)
+		$_.Controls.Add($picBoxDVDCHAPTERPREV)
+		$_.Controls.Add($picBoxDVDCHAPTERNEXT)
+		$_.Controls.Add($PicboxDVDMENU)
+		
+		$_.Margin = New-Object System.Windows.Forms.Padding (0)
+		$_.Padding = New-Object System.Windows.Forms.Padding (0,0,0,0)
+		$_.Visible = $False
 	}
 	$tablePanelDialog | % {
 		$_.Autosize = $True
@@ -800,8 +978,9 @@ Param	(
 		$_.Controls.Add($lbWindowTracker,0,0)
 		$_.Controls.Add($PanelDisplay, 0, 1)	
 		$_.Controls.Add($PanelPosition, 0, 2)
-		$_.Controls.Add($PanelControl, 0, 3)			
-		$_.Controls.Add($PanelPlaylistControl, 0, 4)			
+		$_.Controls.Add($PanelControl, 0, 3)
+		$_.Controls.Add($PanelDVDControl, 0, 4)		
+		$_.Controls.Add($PanelPlaylistControl, 0, 5)			
 		$_.Dock = [System.Windows.Forms.DockStyle]::Fill
 		$_.Location = New-Object System.Drawing.Point(0, 0)
 		$_.Margin = New-Object System.Windows.Forms.Padding (0)
@@ -816,13 +995,16 @@ Param	(
 		$_.TabStop = $false
 	}		
 	$script:formMainDialog | % {
+		$_.Autosize = $True
+		$_.AutosizeMode = [System.Windows.Forms.AutoSizeMode]::GrowAndShrink	
 		$_.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::FixedDialog
 		$_.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::None
 		#$_.BackColor = [System.Drawing.Color]::CornSilk
 		$_.BackColor = Get-VLCRemoteThemeBackground $script:ThemeElement_Player
 		$_.ForeColor = Get-VLCRemoteThemeForeground $script:ThemeElement_Player 
-		
+	
 		$_.Controls.Add($tablePanelDialog)
+		
 		$_.Name = "formDialogController"
 		$_.ControlBox = $false
 		$_.MaximizeBox = $False
@@ -857,6 +1039,7 @@ Param	(
 	$ToolTip.SetToolTip($picBoxTraydown, "Fenster minimieren.")
 	$ToolTip.SetToolTip($picBoxNetworkStream, "Network Streams Manager.")
 	$ToolTip.SetToolTip($picBoxHTTPLink, "Direkteingabe Netzwerk Stream")
+	$ToolTip.SetToolTip($picBoxDVD, "DVD Menu Control")
 	
 	$ToolTip.SetToolTip($picBoxScreen, "Fullscreen")
 	$ToolTip.SetToolTip($picBoxLoop, "Playlist Wiederholen")
@@ -864,7 +1047,17 @@ Param	(
 	$ToolTip.SetToolTip($picBoxRandom, "Playlist zufällig abspielen")
 	
 	$ToolTip.SetToolTip($trackVolume, "Lautstärke :")
-	
+
+	$ToolTip.SetToolTip($picBoxDVDUP,"DVD Menu Up")
+	$ToolTip.SetToolTip($picBoxDVDLEFT,"DVD Menu Left")
+	$ToolTip.SetToolTip($picBoxDVDRIGHT,"DVD Menu Right")
+	$ToolTip.SetToolTip($picBoxDVDDOWN,"DVD Menu Down")
+	$ToolTip.SetToolTip($picBoxDVDOK,"DVD Menu OK")
+	$ToolTip.SetToolTip($picBoxDVDTITLEPREV,"DVD Title Prev")
+	$ToolTip.SetToolTip($picBoxDVDTITLENEXT,"DVD Title Next")
+	$ToolTip.SetToolTip($picBoxDVDCHAPTERPREV,"DVD Chapter Prev")
+	$ToolTip.SetToolTip($picBoxDVDCHAPTERNEXT,"DVD Chapter Next")
+	$ToolTip.SetToolTip($picBoxDVDMenu,"DVD Disc-Menu")
 	# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	$trackPosition.Add_ValueChanged({
 		param($object,[System.EventArgs]$e)
@@ -1171,6 +1364,22 @@ Param	(
 		Set-DirectLinkDialog
 	})
 	# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	$picBoxDVD.add_MouseDown({
+		# TODO
+		$PanelDVDControl.Visible = !$PanelDVDControl.Visible
+	})
+	# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	$picBoxDVDUP.add_MouseDown({Send-VLVDVDCommand $script:CommonVLCRemoteController "UP"})
+	$picBoxDVDLEFT.add_MouseDown({Send-VLVDVDCommand $script:CommonVLCRemoteController "LEFT"})
+	$picBoxDVDRIGHT.add_MouseDown({Send-VLVDVDCommand $script:CommonVLCRemoteController "RIGHT"})
+	$picBoxDVDDOWN.add_MouseDown({Send-VLVDVDCommand $script:CommonVLCRemoteController "DOWN"})
+	$picBoxDVDOK.add_MouseDown({Send-VLVDVDCommand $script:CommonVLCRemoteController "OK"})
+	$picBoxDVDTITLEPREV.add_MouseDown({Send-VLVDVDCommand $script:CommonVLCRemoteController "TITLE_PREV"})
+	$picBoxDVDTITLENEXT.add_MouseDown({Send-VLVDVDCommand $script:CommonVLCRemoteController "TITLE_NEXT"})
+	$picBoxDVDCHAPTERPREV.add_MouseDown({Send-VLVDVDCommand $script:CommonVLCRemoteController "CHAPTER_PREV"})
+	$picBoxDVDCHAPTERNEXT.add_MouseDown({Send-VLVDVDCommand $script:CommonVLCRemoteController "CHAPTER_NEXT"})
+	$picBoxDVDMenu.add_MouseDown({Send-VLVDVDCommand $script:CommonVLCRemoteController "MENU" })
+	
 	$picBoxPlaySettings.Add_MouseClick({
 		if ($Script:CurrentStatus) {
 			Set-PlaySettingsDialog
@@ -1636,7 +1845,7 @@ Param	(
 		$comboBoxRate.Items.AddRange($Script:playRateSettings)
 		$comboBoxRate.Text = $Script:CurrentStatus.Rate
 		
-		if ($Script:CurrentStatus.Typ -ieq "Video") {
+		if (($Script:CurrentStatus.Typ -ieq "Video") -or ($Script:CurrentStatus.Typ -ieq "DVD")){
 			$comboBoxAudioTrack.Items.Clear()
 			$comboBoxAudioTrack.Items.Add("Deaktivieren")
 			foreach ($AT in $Script:CurrentStatus.AudioStreams) {
@@ -2210,7 +2419,7 @@ Param	(
 	
 	Set-DialogValues
 	
-	if (!($Script:CurrentStatus.Typ -ieq "Video")) {
+	if (!(($Script:CurrentStatus.Typ -ieq "Video") -or ($Script:CurrentStatus.Typ -ieq "DVD"))) {
 		$PanelVideo.Enabled = $false
 	}
 	

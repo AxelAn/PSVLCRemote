@@ -97,11 +97,13 @@ $script:SelectedNode = $null
 	
 $contextMenuLV = New-Object System.Windows.Forms.ContextMenu
 	$menuItem_Play					= $contextMenuLV.MenuItems.Add("Abspielen")
+	$menuItem_PlayAsDVD				= $contextMenuLV.MenuItems.Add("Als DVD abspielen")
 	$menuItem_PlayAndAddToPlaylist	= $contextMenuLV.MenuItems.Add("Abspielen und zur Playlist zufügen")
 	$menuItem_AddToPlaylist			= $contextMenuLV.MenuItems.Add("Zur Playlist zufügen")
 
 $contextMenuTV = New-Object System.Windows.Forms.ContextMenu
 	$menuItemTV_PlayAndAddToPlaylist	= $contextMenuTV.MenuItems.Add("Abspielen und zur Playlist zufügen")
+	#$menuItemTV_PlayAsDVD				= $contextMenuLV.MenuItems.Add("Als DVD abspielen")
 	$menuItemTV_AddToPlaylist			= $contextMenuTV.MenuItems.Add("Zur Playlist zufügen")	
 	$menuItemTV_Delimiter1				= $contextMenuTV.MenuItems.Add("-")	
 	$menuItemTV_Refresh					= $contextMenuTV.MenuItems.Add("Aktualisieren (F5)")	
@@ -262,6 +264,34 @@ $nulNode = "<NULL>"
 				$script:listViewFiles.Items.Add($item)	| out-null
 			}
 		}
+	}
+	# ---------------------------------------------------------------------------------------------------------------------
+	function Test-FolderIsDVD {
+		Param($Tag)
+
+		#$Item.Tag | out-Host
+						
+		$IsDVDFolder = $False
+		# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		$SearchUri = $Tag.Uri
+		$Files = Get-VLCRemote-Files $script:CommonVLCRemoteController $SearchUri
+		if ($Files) {
+			$Files | where {($_.Type -ieq "file") -and ($_.Name -ieq "VIDEO_TS.IFO")} | % {
+				$IsDVDFolder = $True
+			}
+			if (!$IsDVDFolder) {
+				$Files | where {($_.Type -ieq "dir") -and ($_.Name -ieq "VIDEO_TS")} | % {
+					$SubFiles = Get-VLCRemote-Files $script:CommonVLCRemoteController $_.Uri
+					
+					$SubFiles | where {($_.Type -ieq "file") -and ($_.Name -ieq "VIDEO_TS.IFO")} | % {
+						$IsDVDFolder = $True
+					}
+				}
+			}
+		}
+		# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		
+		Write-Output $IsDVDFolder
 	}
 	# ---------------------------------------------------------------------------------------------------------------------
 
@@ -506,12 +536,17 @@ Param	(
 	$contextMenuLV.add_Popup({
 	
 		$menuItem_Play.Enabled = $false
+		$menuItem_PlayAsDVD.Enabled = $False
 		
 		if ($script:listViewFiles.SelectedItems.count -eq 1) {
 			$Item = $script:listViewFiles.SelectedItems[0]
 			If ($Item.Tag.Type -ieq "file") {
 				if (Test-ValidFilename $Item.tag.uri) {
 					$menuItem_Play.Enabled = $true
+				}
+			} elseif ($Item.Tag.Type -ieq "dir") {
+				if ((Test-FolderIsDVD $Item.Tag)) {
+					$menuItem_PlayAsDVD.Enabled = $True
 				}
 			}
 		} 
@@ -531,6 +566,19 @@ Param	(
 		Load-Playlist
 	})
 	# ---------------------------------------------------------------------------------------------------------------------
+	$menuItem_PlayAsDVD.Add_Click({
+
+		if ($script:listViewFiles.SelectedItems.Count -eq 1) {
+			$Item = $script:listViewFiles.SelectedItems[0]
+			$Tag = $Item.Tag
+			$Uri = $Tag.Uri -replace "file:","dvd:"
+			
+			Send-VLCRemote-Playfile  $script:CommonVLCRemoteController $Uri
+			
+		}
+	})
+	# ---------------------------------------------------------------------------------------------------------------------
+	
 	$menuItem_PlayAndAddToPlaylist.Add_Click({
 	
 		if ($script:listViewFiles.SelectedItems.Count -gt 0) {

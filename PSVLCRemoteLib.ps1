@@ -371,9 +371,14 @@ Param	(
 		$Typ 			= Get-ValueFromNode $node "info[@name='Typ']"
 		$Codec 			= Get-ValueFromNode $node "info[@name='Codec']"
 
+		# Special Check DVD
+		if ($filename.StartsWith("dvd:")) {
+			$Typ = "DVD"
+		}
+		
 		$AudioStreams = @()
 		$SubtitleStreams = @()
-		if ($Typ -ieq "Video") {
+		if (($Typ -ieq "Video") -or ($Typ -ieq "DVD")) {
 			#
 			# 1. Looking for Audio-Streams
 			$Nodes = $XML.SelectNodes("/root/information/category") | Sort-Object 
@@ -445,6 +450,7 @@ Param	(
 			SubtitleStreams = @($SubtitleStreams)
 			SubtitleDelay	= $subtitledelay
 			AspectRatio 	= $aspectRatio
+			RawResult		= $result
 		}
 	}
 	Write-Output $Status
@@ -998,6 +1004,58 @@ Param	(
 	Send-VLCRemote-SetKey -VLCRemoteController $VLCRemoteController -KeyValue "quit"
 }
 # ---------------------------------------------------------------------------------------------------------------------------------
+Function Send-VLVDVDCommand {
+[CmdletBinding()]
+Param	(
+			[Parameter(Mandatory=$true)][PSObject]$VLCRemoteController,
+			[String]$Command
+		)
+		
+	switch ($Command) {
+	
+		("UP")	{
+					Send-VLCRemote-SetKey -VLCRemoteController $VLCRemoteController -KeyValue "nav-up"
+					break
+				}
+		("DOWN")	{
+					Send-VLCRemote-SetKey -VLCRemoteController $VLCRemoteController -KeyValue "nav-down"
+					break
+				}
+		("LEFT")	{
+					Send-VLCRemote-SetKey -VLCRemoteController $VLCRemoteController -KeyValue "nav-left"
+					break
+				}
+		("RIGHT")	{
+					Send-VLCRemote-SetKey -VLCRemoteController $VLCRemoteController -KeyValue "nav-right"
+					break
+				}
+		("CHAPTER_PREV")	{
+					Send-VLCRemote-SetKey -VLCRemoteController $VLCRemoteController -KeyValue "chapter-prev"
+					break
+				}
+		("CHAPTER_NEXT")	{
+					Send-VLCRemote-SetKey -VLCRemoteController $VLCRemoteController -KeyValue "chapter-next"
+					break
+				}
+		("TITLE_PREV")	{
+					Send-VLCRemote-SetKey -VLCRemoteController $VLCRemoteController -KeyValue "title-prev"
+					break
+				}
+		("TITLE_NEXT")	{
+					Send-VLCRemote-SetKey -VLCRemoteController $VLCRemoteController -KeyValue "title-next"
+					break
+				}
+		("OK")	{
+					Send-VLCRemote-SetKey -VLCRemoteController $VLCRemoteController -KeyValue "nav-activate"
+					break
+				}
+		("MENU")	{
+					Send-VLCRemote-SetKey -VLCRemoteController $VLCRemoteController -KeyValue "disc-menu"
+					break
+				}
+				
+	}
+}
 # ---------------------------------------------------------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------------------------------------------------------
 #

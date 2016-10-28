@@ -23,9 +23,9 @@ Set-StrictMode -Version Latest
 $script:DebugLevel = 0
 #region ScriptVariables
 $script:ScriptName		= "PS VLC Remote"
-$script:ScriptDate		= "17. Oktober 2016"
+$script:ScriptDate		= "27. Oktober 2016"
 $script:ScriptAuthor	= "Axel Anderson"					
-$script:ScriptVersion	= "0.8.9"
+$script:ScriptVersion	= "0.9.0"
 $script:ConfigVersion	= "1"
 
 $Script:VersionHistory = @"
@@ -75,6 +75,7 @@ $Script:VersionHistory = @"
 			0.8.0  21.09.2016 Import NetworkStreams online from http://www.listenlive.eu or offline from  http://www.radio-browser.info/gui/#/ - MariaDB SQL Dumps 
 			0.8.0 - 0.8.8	  Code Cleaning, Some Bugs, NetStreamFile-Manager, TrackerLabel instead of TitleBar in MainPlayer 
 			0.8.9  16.10.2016 Import from  listenlive.eu
+            0.9.0  27.10.2016 Enable Folder Play as DVD if Folder contains VIDEO_TS.IFO or conatins subolder VIDEO_TS with VIDEO_TS.IFO
 "@
 <#
         ToDo:
