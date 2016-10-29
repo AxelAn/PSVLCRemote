@@ -23,10 +23,12 @@ Set-StrictMode -Version Latest
 $script:DebugLevel = 0
 #region ScriptVariables
 $script:ScriptName		= "PS VLC Remote"
-$script:ScriptDate		= "27. Oktober 2016"
+$script:ScriptDate		= "28. Oktober 2016"
 $script:ScriptAuthor	= "Axel Anderson"					
-$script:ScriptVersion	= "0.9.0"
+$script:ScriptVersion	= "0.9.2.0"
 $script:ConfigVersion	= "1"
+
+$PSVLCRemoteVersion = [System.Version]$script:ScriptVersion
 
 $Script:VersionHistory = @"
 
@@ -76,6 +78,8 @@ $Script:VersionHistory = @"
 			0.8.0 - 0.8.8	  Code Cleaning, Some Bugs, NetStreamFile-Manager, TrackerLabel instead of TitleBar in MainPlayer 
 			0.8.9  16.10.2016 Import from  listenlive.eu
             0.9.0  27.10.2016 Enable Folder Play as DVD if Folder contains VIDEO_TS.IFO or conatins subolder VIDEO_TS with VIDEO_TS.IFO
+			0.9.1.0 28.10.2016 DVD Control, Check GitHub Version
+			0.9.2.0 29.10.2016 Import from Radio-Browser.info
 "@
 <#
         ToDo:
@@ -175,6 +179,22 @@ Param	(
 #
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
+Function Test-GithubVersion {
+[CmdletBinding()]
+Param	(
+		)
+
+
+	Invoke-WebRequest "https://raw.githubusercontent.com/AxelAn/PSVLCRemote/master/PSVLCRemoteVersion.xml" -OutFile (Join-Path $script:WorkingDirectory "GithubVersion.xml")
+	
+	$GithubVersion = Import-Clixml -Path (Join-Path $script:WorkingDirectory "GithubVersion.xml")
+	
+	if ($GithubVersion -gt  $PSVLCRemoteVersion) {
+		$d = Show-MessageBox "$script:ScriptName" "There is an newer Version available!`n`nhttps://github.com/AxelAn/PSVLCRemote" "Ok" "Information"
+	}
+	
+	Remove-Item (Join-Path $script:WorkingDirectory "GithubVersion.xml")
+}
 #region MAIN
 # #############################################################################
 # ##### MAIN
@@ -214,6 +234,9 @@ if (Test-Path (Join-Path $script:WorkingDirectory PSVLCRemoteMarquee.ps1)) {
 }
 
 #$Script:VersionText | out-Host
+
+$PSVLCRemoteVersion | Export-Clixml -Path (Join-Path $script:WorkingDirectory "PSVLCRemoteVersion.xml")
+Test-GithubVersion
 
 $Description	= "LOCALHOST"
 $HostnameOrIP	= "LOCALHOST"

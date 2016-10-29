@@ -13,4 +13,4 @@ Control the VLC Player Local or Remote (on Windows-PC, Linux-PC, Rasberry PI ...
 
 Written in Powershell 3.0 with use of WinForms. 
 
-Version : 0.9.0  29.10.2016
+Version : 0.9.2  29.10.2016

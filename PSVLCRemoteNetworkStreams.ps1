@@ -17,6 +17,8 @@ Set-StrictMode -Version Latest
 #region LoadAssemblies
 [void][System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms")
 [void][System.Reflection.Assembly]::LoadWithPartialName("System.Drawing")
+
+Add-Type -AssemblyName System.Net
 #endregion LoadAssemblies
 #
 # ---------------------------------------------------------------------------------------------------------------------------------
@@ -109,45 +111,93 @@ Function Test-StreamURLAvailaible {
 Param	(
 			[string]$NetworkStreamName
 		)
+		
 	$Available = $False
 
 	if ($NetworkStreamName -and ($NetworkStreamName -ne "")) {
-        $HTTP_Response = $Null
-        
-		# First we create the request.
+
 		try {
-			$HTTP_Request = [System.Net.WebRequest]::Create($NetworkStreamName)
-			$HTTP_Request.Method="GET"
+			$WR = [System.Net.WebRequest]::Create($NetworkStreamName)
 		} catch {
-			$HTTP_Request = $NULL
+			$WR = $null
 		}
-		# We then get a response from the site.
-		if ($HTTP_Request -ne $null) {
+		if ($WR) {
+			$WR.KeepAlive = $false
+
+			$WR.Timeout = 30000
+			$WR.UserAgent = "Mozilla/5.0 (Windows NT 10.0; WOW64; rv:49.0) Gecko/20100101 Firefox/49.0"
+
+			$Response = $null
 			try {
-				$HTTP_Response = $HTTP_Request.GetResponse()
-
-				# We then get the HTTP code as an integer.
-				$HTTP_Status = [int]$HTTP_Response.StatusCode
-
-				If ($HTTP_Status -eq 200) { 
-					$Available = $True
-				}
-
-				# Finally, we clean up the http request by closing it.
-				$HTTP_Response.Close()
+				$Response = $WR.GetResponse()
+				$Response.Close()
+			} catch  [System.Net.WebException] {
+				<#
+				$WE =$_.Exception
+				$WE.Status
+				$WE.Response
+				#>
 			} catch {
-				#$_ | select -expand Exception | select -expand InnerException | select * | Out-Host
-				$HTTP_Response = $Null
 			}
-        }
+
+			if ($Response -and ($Response.StatusCode -eq [System.Net.HttpStatusCode]::Ok)) {
+				$Available = $True
+			}
+		}
+		<#
+		try {
+			$WR = [System.Net.WebRequest]::Create($URL)
+			$WR.Timeout = 10000
+			$Response = $null
+			try {
+				$Response = $r.GetResponse()
+			} catch {}
+			if ($Response.StatusCode -eq [System.Net.HttpStatusCode]::Ok) {
+				$Available = $True
+			}
+		} catch {}
+		#>
+		<#
+		try {
+			"TEST $($NetworkStreamName)" | out-Host
+			$Response = Invoke-WebRequest -Uri $NetworkStreamName  -TimeoutSec 30 -UseBasicParsing  -DisableKeepAlive
+			if ($Response.StatusCode -eq 200) {
+				$Available = $true
+			}
+		} catch {}
+		#>
+		<#
 		if (!$Available) {
-            try {
-                $Response = Invoke-WebRequest -Uri $NetworkStreamName  -TimeoutSec 5 -UseBasicParsing  -DisableKeepAlive
-                if ($Response.StatusCode -eq 200) {
-                    $Available = $true
-                }
-            } catch {}
+			$HTTP_Response = $Null
+			
+			# First we create the request.
+			try {
+				$HTTP_Request = [System.Net.WebRequest]::Create($NetworkStreamName)
+				$HTTP_Request.Method="GET"
+			} catch {
+				$HTTP_Request = $NULL
+			}
+			# We then get a response from the site.
+			if ($HTTP_Request -ne $null) {
+				try {
+					$HTTP_Response = $HTTP_Request.GetResponse()
+
+					# We then get the HTTP code as an integer.
+					$HTTP_Status = [int]$HTTP_Response.StatusCode
+
+					If ($HTTP_Status -eq 200) { 
+						$Available = $True
+					}
+
+					# Finally, we clean up the http request by closing it.
+					$HTTP_Response.Close()
+				} catch {
+					#$_ | select -expand Exception | select -expand InnerException | select * | Out-Host
+					$HTTP_Response = $Null
+				}
+			}
         } 
+		#>
 	} 
 	
 	Write-Output $Available
@@ -1418,7 +1468,7 @@ Param	(
 		if ($script:ExtendedNetworkStreamsManager) {
 			#$_.Controls.Add($buttonImportRaimasoftXML)
 			$_.Controls.Add($buttonImportListenLive)
-			#$_.Controls.Add($buttonImportRadioBrowser)
+			$_.Controls.Add($buttonImportRadioBrowser)
 		}
 
 		if ($script:ExtendedNetworkStreamsManager) {
@@ -1763,6 +1813,7 @@ Param	(
 	# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	$buttonImportRadioBrowser.Add_Click({
 
+		Import-RadioBrowserStations
 	
 	})
 	# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

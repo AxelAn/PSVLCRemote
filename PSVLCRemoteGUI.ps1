@@ -1039,7 +1039,7 @@ Param	(
 	$ToolTip.SetToolTip($picBoxTraydown, "Fenster minimieren.")
 	$ToolTip.SetToolTip($picBoxNetworkStream, "Network Streams Manager.")
 	$ToolTip.SetToolTip($picBoxHTTPLink, "Direkteingabe Netzwerk Stream")
-	$ToolTip.SetToolTip($picBoxDVD, "DVD Menu Control")
+	$ToolTip.SetToolTip($picBoxDVD, "DVD Menu Control öffne/schließen.")
 	
 	$ToolTip.SetToolTip($picBoxScreen, "Fullscreen")
 	$ToolTip.SetToolTip($picBoxLoop, "Playlist Wiederholen")

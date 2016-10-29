@@ -17,6 +17,10 @@ Set-StrictMode -Version Latest
 #region LoadAssemblies
 [void][System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms")
 [void][System.Reflection.Assembly]::LoadWithPartialName("System.Drawing")
+
+Add-Type -AssemblyName System.Net
+Add-Type -AssemblyName System.Net.Http
+
 #endregion LoadAssemblies
 #
 # ---------------------------------------------------------------------------------------------------------------------------------
@@ -640,11 +644,13 @@ Param	()
 			Set-Progress-DetailText ""
 			Set-Progress-Values -MinValue 0 -MaxValue $StationsCounter -StepValue 1
 			
-			$NewStations = $Stations | ForEach-Object {
+			$Stations | ForEach-Object {
 				$Station = $_
 				Set-Progress-DetailText "Test exist in DB : $($Station.Name)"
 				
 				$Filter = "URL = '"+$Station.URL+"'"
+				
+				
 				$ExistingStations = $script:xmlNetworkStreamDataSet.Tables["StreamingStations"].Select($Filter)
 				if ($ExistingStations) {
 					#"EXIST ------------------------------------------------------" | out-host
@@ -688,6 +694,132 @@ Param	()
 Function Import-RadioBrowserStations {
 [CmdletBinding()]
 Param	()
+
+	Function ConvertFrom-RadioBrowserSQLBackupToCSV {
+		[CmdletBinding()]
+		Param	(
+					[string]$inFile,
+					[string]$outFile
+				)
+		$SQL = Get-Content $InFile -Encoding UTF8
+		$Header = @( "StationID" ,"Name",  "Url",  "Homepage",  "Favicon",  "Creation",  "Country",  "Language",   "Tags",  "Votes",   "NegativeVotes",   "Source",  "Subcountry",   "clickcount",   "ClickTrend",   "ClickTimestamp",   "Codec",  "LastCheckOK",   "LastCheckTime",   "Bitrate",  "UrlCache",   "LastCheckOkTime")
+
+		$Header -join ","  | out-file -FilePath $OutFile -Encoding utf8 
+
+		$StationLines = $SQL | Select-String -Pattern 'INSERT INTO `Station` VALUES'
+
+		foreach ($Line in $StationLines) {
+
+			$tmpStr = (($Line.Line -replace 'INSERT INTO `Station` VALUES', "").Trim())
+
+			if ($tmpStr.EndsWith(';'))   {$tmpStr = $tmpStr.Remove(($tmpStr.Length-1),1)}
+			if ($tmpStr.StartsWith('(')) {$tmpStr = $tmpStr.Remove(0,1)}
+			if ($tmpStr.EndsWith(')'))   {$tmpStr = $tmpStr.Remove(($tmpStr.Length-1),1)}
+
+			# Replace the masked single quotation mark
+			$tmpStr = $tmpStr -Replace "\\'",''
+			# Change the single quotation mark in double, IMPORTANT
+			$tmpStr = $tmpStr -Replace "'",'"'
+
+			# Split line in single station lines
+			$Stations = $tmpStr -Split '\),\('
+			
+			$stations | out-file -FilePath $OutFile -Encoding utf8 -Append
+
+		}		
+	
+	}
+	# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+	$InFilename = Select-FileDialog "Select SQL Backup from 'http://www.radio-browser.info/backups/'" "" $script:WorkingDirectory "SQL Files (*.sql)|*.sql"
+	if ($InFileName) {
+		$outFileName = (Join-Path $script:WorkingDirectory "ImportRadioBrowser.csv")
+		
+		Generate-FormProgress
+		Set-Progress-Title "Import Stream Stations $($InFileName)"
+		Show-Progress
+		
+		Set-Progress-Headtext "Import from SQL Backup...."		
+		ConvertFrom-RadioBrowserSQLBackupToCSV -InFile $InFileName -OutFile $outFileName
+	
+		if ((Test-Path $outFileName)) {
+
+			$csvData = Import-Csv $outFileName -Encoding UTF8 
+			
+			if (!$script:xmlNetworkStreamDataSet.Tables["StreamingStations"]) {
+				Add-TableStreamingStations $xmlNetworkStreamDataSet
+			}
+		
+			$StationsCounter = $csvData.count
+			$ExistCounter = 0
+			$NotResponseCounter = 0
+			$AddedCounter = 0
+
+			Set-Progress-Headtext "Check Stations...."
+			Set-Progress-DetailText ""
+			Set-Progress-Values -MinValue 0 -MaxValue $StationsCounter -StepValue 1
+						
+			$csvData | foreach-object {
+				$Data = $_
+				
+				$StationName = $Data.Name
+
+				if (($StationName -and ($StationName -ne "")) -and ($Data.UrlCache -and ($Data.UrlCache -ne ""))) {
+					$Station = New-Object PSObject -Property @{
+						ID				= $script:DummyID
+						StreamType		= "WebRadio"
+						Name			= $StationName
+						URL				= $Data.UrlCache
+						WebSite			= $Data.Homepage
+						Region			= "World"
+						Country			= $Data.Country
+						State			= $Data.SubCountry
+						City			= $Data.SubCountry
+						Genre			= ""
+						Bitrate			= $Data.Bitrate
+						Rate			= "0"
+						Tags			= $Data.Tags
+						Annotation		= "Imported from Radio-Browser.info $((Get-Date).ToShortDateString())"
+						Favorite		=  "0"
+					}
+					
+					$Filter = "URL = '"+$Station.URL+"'"
+					#$Filter | out-host
+					$ExistingStations = $script:xmlNetworkStreamDataSet.Tables["StreamingStations"].Select($Filter)
+					if ($ExistingStations) {
+						#"EXIST ------------------------------------------------------" | out-host
+						#$ExistingStations | out-host
+						#"------------------------------------------------------------" | out-host
+						$ExistCounter++
+					} else {
+						Set-Progress-DetailText "Test URL Response : $($Station.Name)"
+						$Avail = Test-StreamURLAvailaible $Station.URL
+						
+						if ($Avail) {
+							Set-Progress-DetailText "Add to DB : $($Station.Name)"
+							#
+							Save-NetworkStreamData $script:xmlNetworkStreamDataSet $script:xmlNetworkStreamFilename $script:DummyID $Station
+							$AddedCounter++
+							#
+						} else {
+							$NotResponseCounter++
+						}
+					}
+					
+					
+				}
+				Perform-Progress-Step
+			}
+			"Stations to Import    : $StationsCounter" | out-host
+			"Stations Exist in DB  : $ExistCounter" | out-host
+			"Stations not Response : $NotResponseCounter" | out-host
+			"Stations Added		   : $AddedCounter" | out-host
+			$script:checkboxShowFavorite.Checked = $false
+			Load-SearchSettings
+			Load-StationList -OnlyFavorites:$script:checkboxShowFavorite.Checked
+		}
+		Hide-Progress
+	}
 }
 #
 # ---------------------------------------------------------------------------------------------------------------------------------
